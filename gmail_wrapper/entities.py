@@ -90,9 +90,9 @@ class Message:
     def date(self):
         if not self._date:
             self._fetch_if_needed()
-            self._date = datetime.utcfromtimestamp(
-                int(self._raw["internalDate"]) / 1000
-            )
+            ms_in_seconds = 1000
+            date_in_seconds = int(self._raw["internalDate"]) / ms_in_seconds
+            self._date = datetime.utcfromtimestamp(date_in_seconds)
 
         return self._date
 
