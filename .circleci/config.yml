@@ -1,0 +1,59 @@
+version: 2
+
+jobs:
+  check:
+    working_directory: ~/repo
+    docker:
+      - image: themattrix/tox
+
+    steps:
+      - checkout
+
+      - run:
+          name: test
+          command: |
+            make test-all
+
+      - run:
+          name: gen-coverage
+          command: |
+            pip install coverage
+            make coverage
+
+      - run:
+          name: upload-coverage
+          command: |
+            bash <(curl -s https://codecov.io/bash)
+  release:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+
+      - run:
+          name: release
+          command: |
+            make release
+
+workflows:
+  version: 2
+  check-all:
+    jobs:
+      - check
+  check-build-release:
+    jobs:
+      - check:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - release:
+          context: org-global
+          requires:
+            - check
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
