@@ -4,7 +4,7 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient import discovery
 
-from gmail.entities import Message, AttachmentBody
+from gmail_wrapper.entities import Message, AttachmentBody
 
 
 class GmailClient:
