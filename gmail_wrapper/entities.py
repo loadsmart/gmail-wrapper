@@ -63,7 +63,7 @@ class Message:
 
     def _fetch_if_needed(self):
         if "payload" not in self._raw:
-            self._raw = self._client.get_message(self.id, as_raw=True)
+            self._raw = self._client.get_raw_message(self.id)
 
     def _make_headers(self):
         self._headers = []

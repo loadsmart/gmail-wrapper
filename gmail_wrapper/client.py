@@ -33,38 +33,38 @@ class GmailClient:
     def _messages_resource(self):
         return self._client.users().messages()
 
-    def get_messages(self, query="", limit=None, as_raw=False):
-        raw_messages = (
+    def get_raw_messages(self, query="", limit=None):
+        return (
             self._messages_resource()
             .list(userId=self.email, q=query, maxResults=limit)
             .execute()
         )
 
-        if as_raw:
-            return raw_messages
+    def get_messages(self, query="", limit=None):
+        raw_messages = self.get_raw_messages(query, limit)
 
         if "messages" not in raw_messages:
             return []
 
         return [Message(self, raw_message) for raw_message in raw_messages["messages"]]
 
-    def get_message(self, id, as_raw=False):
-        raw_message = self._messages_resource().get(userId=self.email, id=id).execute()
+    def get_raw_message(self, id):
+        return self._messages_resource().get(userId=self.email, id=id).execute()
 
-        if as_raw:
-            return raw_message
+    def get_message(self, id):
+        raw_message = self.get_raw_message(id)
 
         return Message(self, raw_message)
 
-    def get_attachment_body(self, id, message_id, as_raw=False):
-        raw_attachment_body = (
+    def get_raw_attachment_body(self, id, message_id):
+        return (
             self._messages_resource()
             .attachments()
             .get(userId=self.email, id=id, messageId=message_id)
             .execute()
         )
 
-        if as_raw:
-            return raw_attachment_body
+    def get_attachment_body(self, id, message_id):
+        raw_attachment_body = self.get_attachment_body(id, message_id)
 
         return AttachmentBody(raw_attachment_body)
