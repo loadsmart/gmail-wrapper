@@ -17,15 +17,11 @@ class AttachmentBody:
 
     @property
     def content(self):
-        if not self._content:
-            if "data" not in self._raw:
-                return None
+        data = self._raw.get("data")
+        if not data:
+            return None
 
-            self._content = base64.urlsafe_b64decode(
-                self._raw.get("data").encode("UTF-8")
-            )
-
-        return self._content
+        return base64.urlsafe_b64decode(data.encode("UTF-8"))
 
 
 class Attachment:
@@ -34,10 +30,6 @@ class Attachment:
         self._client = client
         self._body = AttachmentBody(raw_part["body"])
         self.message_id = message_id
-
-    def _fetch_body_if_needed(self):
-        if not self._body.content:
-            self._body = self._client.get_attachment_body(self.id, self.message_id)
 
     @property
     def id(self):
@@ -49,7 +41,9 @@ class Attachment:
 
     @property
     def content(self):
-        self._fetch_body_if_needed()
+        if not self._body.content:
+            self._body = self._client.get_attachment_body(self.id, self.message_id)
+
         return self._body.content
 
 
@@ -57,22 +51,20 @@ class Message:
     def __init__(self, client, raw_message):
         self._raw = raw_message
         self._client = client
-        self._date = None
-        self._headers = None
-        self._attachments = None
-
-    def _fetch_if_needed(self):
-        if "payload" not in self._raw:
-            self._raw = self._client.get_raw_message(self.id)
-
-    def _make_headers(self):
-        self._headers = []
-        for header in self._payload.get("headers"):
-            self._headers[header["name"]] = header["value"]
 
     @property
     def _payload(self):
+        if "payload" not in self._raw:
+            self._raw = self._client.get_raw_message(self.id)
+
         return self._raw["payload"]
+
+    @property
+    def headers(self):
+        headers = {}
+        for header in self._payload.get("headers"):
+            headers[header["name"]] = header["value"]
+        return headers
 
     @property
     def id(self):
@@ -80,33 +72,21 @@ class Message:
 
     @property
     def subject(self):
-        if not self._headers:
-            self._fetch_if_needed()
-            self._make_headers()
-
-        return self._headers["Subject"]
+        return self.headers["Subject"]
 
     @property
     def date(self):
-        if not self._date:
-            self._fetch_if_needed()
-            ms_in_seconds = 1000
-            date_in_seconds = int(self._raw["internalDate"]) / ms_in_seconds
-            self._date = datetime.utcfromtimestamp(date_in_seconds)
-
-        return self._date
+        ms_in_seconds = 1000
+        date_in_seconds = int(self._raw["internalDate"]) / ms_in_seconds
+        return datetime.utcfromtimestamp(date_in_seconds)
 
     @property
     def attachments(self):
-        if not self._attachments:
-            self._fetch_if_needed()
-            self._attachments = [
-                Attachment(self.id, self._client, part)
-                for part in self._payload.get("parts")
-                if part["filename"]
-            ]
-
-        return self._attachments
+        return [
+            Attachment(self.id, self._client, part)
+            for part in self._payload.get("parts")
+            if part["filename"]
+        ]
 
     def __str__(self):
         return "Gmail message: {}".format(self.id)
