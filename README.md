@@ -11,12 +11,6 @@ vitualenv .venv
 source .venv/bin/activate
 ```
 
-Setup [pip-tools](https://pypi.org/project/pip-tools/)
-
-```sh
-pip install pip-tools
-```
-
 Then you can install the rest of dependencies
 
 ```sh
