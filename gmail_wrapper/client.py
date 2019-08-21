@@ -30,28 +30,6 @@ class GmailClient:
         self._client = discovery.build("gmail", "v1", credentials=credentials)
         self.email = email
 
-    def _make_query(
-        self,
-        from_email=None,
-        with_subject=None,
-        with_attachment_type=None,
-        with_labels=None,
-        without_labels=None,
-    ):
-        query = []
-        if from_email:
-            query.append("from:{}".format(from_email))
-        if with_subject:
-            query.append("subject:{}".format(with_subject))
-        if with_attachment_type:
-            query.append("filename:{}".format(with_attachment_type))
-        for label in with_labels if with_labels else []:
-            query.append("label:{}".format(label))
-        for label in without_labels if without_labels else []:
-            query.append("-label:{}".format(label))
-
-        return query
-
     def _messages_resource(self):
         return self._client.users().messages()
 
