@@ -1,52 +1,6 @@
-import pytest
-
 from gmail_wrapper import GmailClient
 from gmail_wrapper.entities import Message, AttachmentBody
-
-
-def _make_gmail_client(
-    mocker, list_return=None, get_return=None, attachment_return=None
-):
-    return mocker.MagicMock(
-        users=mocker.MagicMock(
-            return_value=mocker.MagicMock(
-                messages=mocker.MagicMock(
-                    return_value=mocker.MagicMock(
-                        list=mocker.MagicMock(
-                            return_value=mocker.MagicMock(
-                                execute=mocker.MagicMock(return_value=list_return)
-                            )
-                        ),
-                        get=mocker.MagicMock(
-                            return_value=mocker.MagicMock(
-                                execute=mocker.MagicMock(return_value=get_return)
-                            )
-                        ),
-                        attachments=mocker.MagicMock(
-                            return_value=mocker.MagicMock(
-                                get=mocker.MagicMock(
-                                    return_value=mocker.MagicMock(
-                                        execute=mocker.MagicMock(
-                                            return_value=attachment_return
-                                        )
-                                    )
-                                )
-                            )
-                        ),
-                    )
-                )
-            )
-        )
-    )
-
-
-@pytest.fixture
-def client(mocker):
-    mocker.patch(
-        "gmail_wrapper.client.GmailClient._make_client",
-        return_value=_make_gmail_client(mocker),
-    )
-    return GmailClient(email="foo@bar.com", secrets_json_string="{}")
+from gmail_wrapper.tests.utils import make_gmail_client
 
 
 class TestGetRawMessages:
@@ -54,7 +8,7 @@ class TestGetRawMessages:
         raw_response = [{"messages": [raw_incomplete_message, raw_incomplete_message]}]
         mocker.patch(
             "gmail_wrapper.client.GmailClient._make_client",
-            return_value=_make_gmail_client(mocker, list_return=raw_response),
+            return_value=make_gmail_client(mocker, list_return=raw_response),
         )
         client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
         assert client.get_raw_messages() == raw_response
@@ -77,7 +31,7 @@ class TestGetMessages:
         raw_response = {"resultSizeEstimate": 0}
         mocker.patch(
             "gmail_wrapper.client.GmailClient._make_client",
-            return_value=_make_gmail_client(mocker, list_return=raw_response),
+            return_value=make_gmail_client(mocker, list_return=raw_response),
         )
         client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
         messages = client.get_messages()
@@ -88,7 +42,7 @@ class TestGetRawMessage:
     def test_it_returns_a_raw_message(self, mocker, raw_complete_message):
         mocker.patch(
             "gmail_wrapper.client.GmailClient._make_client",
-            return_value=_make_gmail_client(mocker, get_return=raw_complete_message),
+            return_value=make_gmail_client(mocker, get_return=raw_complete_message),
         )
         client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
         message = client.get_raw_message("123AAB")
@@ -111,7 +65,7 @@ class TestGetRawAttachmentBody:
     def test_it_returns_a_raw_attachment_body(self, mocker, raw_attachment_body):
         mocker.patch(
             "gmail_wrapper.client.GmailClient._make_client",
-            return_value=_make_gmail_client(
+            return_value=make_gmail_client(
                 mocker, attachment_return=raw_attachment_body
             ),
         )

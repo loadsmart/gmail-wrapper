@@ -2,6 +2,9 @@ import json
 
 import pytest
 
+from gmail_wrapper import GmailClient
+from gmail_wrapper.tests.utils import make_gmail_client
+
 
 @pytest.fixture
 def secrets_string():
@@ -79,3 +82,12 @@ def raw_attachment_body():
         "attachmentId": "CCX457",
         "size": 60,
     }
+
+
+@pytest.fixture
+def client(mocker):
+    mocker.patch(
+        "gmail_wrapper.client.GmailClient._make_client",
+        return_value=make_gmail_client(mocker),
+    )
+    return GmailClient(email="foo@bar.com", secrets_json_string="{}")
