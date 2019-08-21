@@ -72,7 +72,29 @@ class TestAttachment:
         incomplete_attachment = Attachment(
             "123AAB", client, raw_complete_message["payload"]["parts"][1]
         )
-        assert incomplete_attachment.content == b"The Quick Brown Fox Jumps Over The Lazy Dog"
+        assert incomplete_attachment.content
         mocked_get_attachment_body.assert_called_once_with(
             raw_attachment_body["attachmentId"], "123AAB"
+        )
+
+
+class TestAttachmentBody:
+    def test_it_has_basic_properties_without_additional_fetch(
+        self, raw_complete_message
+    ):
+        body = raw_complete_message["payload"]["parts"][1]["body"]
+        incomplete_attachment_body = AttachmentBody(body)
+        assert incomplete_attachment_body.id == body["attachmentId"]
+        assert incomplete_attachment_body.size == body["size"]
+
+    def test_it_returns_none_when_no_data(self, raw_complete_message):
+        body = raw_complete_message["payload"]["parts"][1]["body"]
+        incomplete_attachment_body = AttachmentBody(body)
+        assert not incomplete_attachment_body.content
+
+    def test_it_decodes_base64_data(self, raw_attachment_body):
+        complete_attachment_body = AttachmentBody(raw_attachment_body)
+        assert (
+            complete_attachment_body.content
+            == b"The Quick Brown Fox Jumps Over The Lazy Dog"
         )
