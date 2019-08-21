@@ -3,7 +3,7 @@ import json
 import pytest
 
 from gmail_wrapper import GmailClient
-from gmail_wrapper.tests.utils import make_gmail_client
+from tests.utils import make_gmail_client
 
 
 @pytest.fixture

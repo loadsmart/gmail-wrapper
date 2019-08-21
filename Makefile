@@ -1,20 +1,48 @@
-clean:
-	@find . -name *.pyc -delete
-	@find . -name __pycache__ -delete
+.PHONY: clean-pyc clean-build clean
 
-${VIRTUAL_ENV}/bin/pip-sync:
-	pip install pip-tools
+help:
+	@echo "clean - remove all build, test, coverage and Python artifacts"
+	@echo "clean-build - remove build artifacts"
+	@echo "clean-pyc - remove Python file artifacts"
+	@echo "clean-test - remove test and coverage artifacts"
+	@echo "test - run tests quickly with the default Python"
+	@echo "test-all - run tests on every Python version with tox"
+	@echo "coverage - check code coverage quickly with the default Python"
+	@echo "release - package and upload a release"
+	@echo "dist - package"
 
-pip-tools: ${VIRTUAL_ENV}/bin/pip-sync
+clean: clean-build clean-pyc clean-test
 
-lock:
-	pip-compile --generate-hashes --output-file requirements.txt requirements/base.in
+clean-build:
+	rm -fr build/
+	rm -fr dist/
+	rm -fr *.egg-info
 
-lock-dev:
-	pip-compile --generate-hashes --output-file requirements-dev.txt requirements/dev.in
+clean-pyc:
+	find . -name '*.pyc' -exec rm -f {} +
+	find . -name '*.pyo' -exec rm -f {} +
+	find . -name '*~' -exec rm -f {} +
+	find . -name '__pycache__' -exec rm -fr {} +
 
-install: pip-tools
-	pip-sync requirements.txt
+clean-test:
+	rm -fr .tox/
+	rm -f .coverage
+	rm -fr htmlcov/
 
-install-dev: pip-tools
-	pip-sync requirements-dev.txt
+test:
+	python setup.py pytest
+
+test-all:
+	tox
+
+coverage:
+	pip install coverage
+	coverage run setup.py pytest
+	coverage report
+	coverage xml
+
+release: dist
+	curl -F package=@`find dist -name "gmail-wrapper-*.whl"` $(PRIVATE_PYPI_UPLOAD_URL)
+
+dist: clean
+	python setup.py bdist_wheel --universal

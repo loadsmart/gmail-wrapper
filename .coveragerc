@@ -1,0 +1,9 @@
+[run]
+source = gmail_wrapper
+omit = **/test*.py, **/tests/, **/__init__.py,
+
+[report]
+show_missing = true
+
+[xml]
+output = cov/coverage.xml

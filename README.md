@@ -11,13 +11,19 @@ virtualenv .venv
 source .venv/bin/activate
 ```
 
-Then you can install the rest of dependencies
+Then you can install the dependencies
 
 ```sh
-make install-dev
+pip install -e .
 ```
 
 ## Testing
+
+Simply run
+
+```sh
+make test
+```
 
 ## Using
 
