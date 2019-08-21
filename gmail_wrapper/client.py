@@ -16,7 +16,7 @@ class GmailClient:
     SCOPE_MODIFY = "https://www.googleapis.com/auth/gmail.modify"
     SCOPE_METADATA = "https://www.googleapis.com/auth/gmail.metadata"
 
-    def __init__(self, email, secrets_json_string, scopes = None):
+    def __init__(self, email, secrets_json_string, scopes=None):
         google_secrets_data = json.loads(secrets_json_string)["web"]
         credentials = Credentials(
             None,
@@ -55,19 +55,7 @@ class GmailClient:
     def _messages_resource(self):
         return self._client.users().messages()
 
-    def get_messages(
-        self,
-        from_email=None,
-        with_subject=None,
-        with_attachment_type=None,
-        with_labels=None,
-        without_labels=None,
-        limit=None,
-        as_raw=False,
-    ):
-        query = self._make_query(
-            from_email, with_subject, with_attachment_type, with_labels, without_labels
-        )
+    def get_messages(self, query="", limit=None, as_raw=False):
         raw_messages = (
             self._messages_resource()
             .list(userId=self.email, q=query, maxResults=limit)
