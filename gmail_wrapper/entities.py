@@ -77,7 +77,7 @@ class Message:
     @property
     def date(self):
         ms_in_seconds = 1000
-        date_in_seconds = int(self._raw["internalDate"]) / ms_in_seconds
+        date_in_seconds = int(self._raw.get("internalDate")) / ms_in_seconds
         return datetime.utcfromtimestamp(date_in_seconds)
 
     @property

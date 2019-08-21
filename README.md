@@ -7,7 +7,7 @@ Because scrapping Gmail data doesn't have to be a pain.
 Create your [venv](https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments)
 
 ```sh
-vitualenv .venv
+virtualenv .venv
 source .venv/bin/activate
 ```
 

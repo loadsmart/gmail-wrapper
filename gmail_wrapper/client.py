@@ -17,6 +17,10 @@ class GmailClient:
     SCOPE_METADATA = "https://www.googleapis.com/auth/gmail.metadata"
 
     def __init__(self, email, secrets_json_string, scopes=None):
+        self.email = email
+        self._client = self._make_client(secrets_json_string, scopes)
+
+    def _make_client(self, secrets_json_string, scopes):
         google_secrets_data = json.loads(secrets_json_string)["web"]
         credentials = Credentials(
             None,
@@ -27,8 +31,7 @@ class GmailClient:
             scopes=scopes if scopes else [GmailClient.SCOPE_READONLY],
         )
         credentials.refresh(Request())
-        self._client = discovery.build("gmail", "v1", credentials=credentials)
-        self.email = email
+        return discovery.build("gmail", "v1", credentials=credentials)
 
     def _messages_resource(self):
         return self._client.users().messages()
@@ -65,6 +68,6 @@ class GmailClient:
         )
 
     def get_attachment_body(self, id, message_id):
-        raw_attachment_body = self.get_attachment_body(id, message_id)
+        raw_attachment_body = self.get_raw_attachment_body(id, message_id)
 
         return AttachmentBody(raw_attachment_body)
