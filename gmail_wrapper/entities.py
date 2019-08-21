@@ -21,7 +21,9 @@ class AttachmentBody:
             if "data" not in self._raw:
                 return None
 
-            self._content = base64.urlsafe_b64decode(self._raw.get("data").encode("UTF-8"))
+            self._content = base64.urlsafe_b64decode(
+                self._raw.get("data").encode("UTF-8")
+            )
 
         return self._content
 
@@ -57,11 +59,16 @@ class Message:
         self._client = client
         self._subject = None
         self._date = None
-        self._attachments = None
+        self._headers = None
 
     def _fetch_if_needed(self):
         if "payload" not in self._raw:
             self._raw = self._client.get_message(self.id, as_raw=True)
+
+    def _make_headers(self):
+        self._headers = []
+        for header in self._payload.get("headers"):
+            self._headers[header["name"]] = header["value"]
 
     @property
     def _payload(self):
@@ -73,18 +80,11 @@ class Message:
 
     @property
     def subject(self):
-        if not self._subject:
+        if not self._headers:
             self._fetch_if_needed()
-            self._subject = next(
-                (
-                    header
-                    for header in self._payload.get("headers")
-                    if header["name"] == "Subject"
-                ),
-                None,
-            ).get("value")
+            self._make_headers()
 
-        return self._subject
+        return self._headers["Subject"]
 
     @property
     def date(self):
@@ -98,7 +98,7 @@ class Message:
 
     @property
     def attachments(self):
-        if not self._attachments:
+        if not self._headers:
             self._fetch_if_needed()
             self._attachments = [
                 Attachment(self.id, self._client, part)
