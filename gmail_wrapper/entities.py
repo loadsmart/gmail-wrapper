@@ -3,8 +3,8 @@ from datetime import datetime
 
 
 class AttachmentBody:
-    def __init__(self, body):
-        self._raw = body
+    def __init__(self, raw_body):
+        self._raw = raw_body
         self._content = None
 
     @property
@@ -29,10 +29,10 @@ class AttachmentBody:
 
 
 class Attachment:
-    def __init__(self, message_id, client, part):
-        self._raw = part
+    def __init__(self, message_id, client, raw_part):
+        self._raw = raw_part
         self._client = client
-        self._body = AttachmentBody(part["body"])
+        self._body = AttachmentBody(raw_part["body"])
         self.message_id = message_id
 
     def _fetch_body_if_needed(self):
@@ -54,12 +54,12 @@ class Attachment:
 
 
 class Message:
-    def __init__(self, client, message):
-        self._raw = message
+    def __init__(self, client, raw_message):
+        self._raw = raw_message
         self._client = client
-        self._subject = None
         self._date = None
         self._headers = None
+        self._attachments = None
 
     def _fetch_if_needed(self):
         if "payload" not in self._raw:
@@ -98,7 +98,7 @@ class Message:
 
     @property
     def attachments(self):
-        if not self._headers:
+        if not self._attachments:
             self._fetch_if_needed()
             self._attachments = [
                 Attachment(self.id, self._client, part)
