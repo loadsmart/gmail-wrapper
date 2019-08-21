@@ -1,5 +1,7 @@
 # Gmail Wrapper
 
+[![CircleCI](https://circleci.com/gh/loadsmart/gmail-wrapper/tree/master.svg?style=svg)](https://circleci.com/gh/loadsmart/gmail-wrapper/tree/master)
+
 Because scrapping Gmail data doesn't have to be a pain.
 
 ## Developing
