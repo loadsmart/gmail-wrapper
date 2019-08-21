@@ -42,7 +42,7 @@ coverage:
 	coverage xml
 
 release: dist
-	curl -F package=@`find dist -name "gmail-wrapper-*.whl"` $(PRIVATE_PYPI_UPLOAD_URL)
+	curl -F package=@`find dist -name "gmail_wrapper-*.whl"` $(PRIVATE_PYPI_UPLOAD_URL)
 
 dist: clean
 	python setup.py bdist_wheel --universal
