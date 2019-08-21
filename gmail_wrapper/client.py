@@ -8,7 +8,15 @@ from gmail_wrapper.entities import Message, AttachmentBody
 
 
 class GmailClient:
-    def __init__(self, email, secrets_json_string):
+    SCOPE_LABELS = "https://www.googleapis.com/auth/gmail.labels"
+    SCOPE_SEND = "https://www.googleapis.com/auth/gmail.send"
+    SCOPE_READONLY = "https://www.googleapis.com/auth/gmail.readonly"
+    SCOPE_COMPOSE = "https://www.googleapis.com/auth/gmail.compose"
+    SCOPE_INSERT = "https://www.googleapis.com/auth/gmail.insert"
+    SCOPE_MODIFY = "https://www.googleapis.com/auth/gmail.modify"
+    SCOPE_METADATA = "https://www.googleapis.com/auth/gmail.metadata"
+
+    def __init__(self, email, secrets_json_string, scopes = None):
         google_secrets_data = json.loads(secrets_json_string)["web"]
         credentials = Credentials(
             None,
@@ -16,7 +24,7 @@ class GmailClient:
             client_id=google_secrets_data["client_id"],
             client_secret=google_secrets_data["client_secret"],
             token_uri=google_secrets_data["token_uri"],
-            scopes=["https://www.googleapis.com/auth/gmail.readonly"],
+            scopes=scopes if scopes else [GmailClient.SCOPE_READONLY],
         )
         credentials.refresh(Request())
         self._client = discovery.build("gmail", "v1", credentials=credentials)
