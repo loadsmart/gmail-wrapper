@@ -6,6 +6,12 @@
 
 Because scrapping Gmail data doesn't have to be a pain.
 
+## Installing
+
+```sh
+pip install gmail-wrapper
+```
+
 ## Developing
 
 Create your [venv](https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments)
