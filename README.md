@@ -59,7 +59,7 @@ def print_message_data(message):
     print("DATE: {}".format(message.date))
     for attachment in message.attachments:
         print("\t-- ATTACHMENT {} --".format(attachment.id))
-        print("\t\tFILENAME: ".format(attachment.filename))
+        print("\t\tFILENAME: {}".format(attachment.filename))
         print("\t\tDECODED SIZE: {}".format(sys.getsizeof(attachment.content)))
 
 # Get a message list
