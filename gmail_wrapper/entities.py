@@ -109,4 +109,4 @@ class Message:
         return self._attachments
 
     def __str__(self):
-        return "<Gmail message: {}>".format(self.id)
+        return "Gmail message: {}".format(self.id)
