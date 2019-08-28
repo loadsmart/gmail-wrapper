@@ -26,7 +26,7 @@ def secrets_string():
 
 @pytest.fixture
 def raw_incomplete_message():
-    return {"id": 123, "internalDate": "1566398665"}
+    return {"id": "123AAB", "internalDate": "1566398665"}
 
 
 @pytest.fixture

@@ -35,6 +35,17 @@ class TestMessage:
         )
         mocked_get_raw_message.assert_called_once_with(raw_incomplete_message["id"])
 
+    def test_get_labels(
+        self, mocker, raw_complete_message, client, raw_incomplete_message
+    ):
+        mocked_get_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.get_raw_message",
+            return_value=raw_complete_message,
+        )
+        incomplete_message = Message(client, raw_incomplete_message)
+        assert incomplete_message.labels == raw_complete_message["labelIds"]
+        mocked_get_raw_message.assert_called_once_with(raw_incomplete_message["id"])
+
     def test_as_str(self, client, raw_incomplete_message):
         message = Message(client, raw_incomplete_message)
         assert str(message) == "Gmail message: {}".format(raw_incomplete_message["id"])
@@ -47,6 +58,22 @@ class TestMessage:
                 for attachment in complete_message.attachments
             ]
         )
+
+    def test_it_modifies_a_message(
+        self, mocker, client, raw_incomplete_message, raw_complete_message
+    ):
+        mocked_modify_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.modify_raw_message",
+            return_value=raw_complete_message,
+        )
+        message = Message(client, raw_incomplete_message)
+        message.modify(add_labels=["phishing"], remove_labels=["oklahoma"])
+        mocked_modify_raw_message.assert_called_once_with(
+            raw_incomplete_message["id"],
+            add_labels=["phishing"],
+            remove_labels=["oklahoma"],
+        )
+        assert message.labels == raw_complete_message["labelIds"]
 
 
 class TestAttachment:

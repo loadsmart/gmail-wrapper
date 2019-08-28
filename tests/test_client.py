@@ -86,3 +86,35 @@ class TestGetAttachmentBody:
         mocked_get_raw_attachment_body.assert_called_once_with("CCX457", "123AAB")
         assert isinstance(attachment_body, AttachmentBody)
         assert attachment_body.id == raw_attachment_body["attachmentId"]
+
+
+class TestModifyRawMessage:
+    def test_it_modifies_and_return_a_raw_message(self, mocker, raw_complete_message):
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(mocker, modify_return=raw_complete_message),
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        modified_message = client.modify_raw_message(
+            id="CCX457", add_labels=["processed"], remove_labels=["phishing"]
+        )
+        assert modified_message == raw_complete_message
+        client._messages_resource().modify.assert_called_once_with(
+            userId="foo@bar.com",
+            id="CCX457",
+            body={"addLabelIds": ["processed"], "removeLabelIds": ["phishing"]},
+        )
+
+
+class TestModifyMessage:
+    def test_it_returns_a_modified_message(self, client, mocker, raw_complete_message):
+        mocked_modify_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.modify_raw_message",
+            return_value=raw_complete_message,
+        )
+        modified_message = client.modify_message(
+            id="CCX457", add_labels=["foo"], remove_labels=["bar"]
+        )
+        mocked_modify_raw_message.assert_called_once_with("CCX457", ["foo"], ["bar"])
+        assert isinstance(modified_message, Message)
+        assert modified_message.id == raw_complete_message["id"]
