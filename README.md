@@ -1,10 +1,9 @@
 # Gmail Wrapper
 
-[![CircleCI](https://circleci.com/gh/loadsmart/gmail-wrapper/tree/master.svg?style=svg)](https://circleci.com/gh/loadsmart/gmail-wrapper/tree/master)
-
+[![CircleCI](https://circleci.com/gh/loadsmart/gmail-wrapper/tree/master.svg?style=svg&circle-token=110f54407b50c79865fe1f9b4352e213bc68504b)](https://circleci.com/gh/loadsmart/gmail-wrapper/tree/master)
 [![codecov](https://codecov.io/gh/loadsmart/gmail-wrapper/branch/master/graph/badge.svg?token=Ciq3QScb0L)](https://codecov.io/gh/loadsmart/gmail-wrapper)
 
-Because scrapping Gmail data doesn't have to be a pain.
+Because scrapping Gmail data doesn't have to be a [pain](https://googleapis.github.io/google-api-python-client/docs/dyn/gmail_v1.html).
 
 ## Installing
 
