@@ -81,12 +81,21 @@ class Message:
         return datetime.utcfromtimestamp(date_in_seconds)
 
     @property
+    def labels(self):
+        return self._raw.get("labelIds")
+
+    @property
     def attachments(self):
         return [
             Attachment(self.id, self._client, part)
             for part in self._payload.get("parts")
             if part["filename"]
         ]
+
+    def modify(self, add_labels=None, remove_labels=None):
+        self._raw = self._client.modify_message(
+            self.id, add_labels=add_labels, remove_labels=remove_labels
+        )
 
     def __str__(self):
         return "Gmail message: {}".format(self.id)

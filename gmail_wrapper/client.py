@@ -59,6 +59,16 @@ class GmailClient:
 
         return Message(self, raw_message)
 
+    def modify_message(self, id, add_labels=None, remove_labels=None):
+        return self._messages_resource().modify(
+            userId=self.email,
+            id=id,
+            body={
+                "addLabelIds": add_labels if add_labels else [],
+                "removeLabelIds": remove_labels if remove_labels else [],
+            },
+        )
+
     def get_raw_attachment_body(self, id, message_id):
         return (
             self._messages_resource()
