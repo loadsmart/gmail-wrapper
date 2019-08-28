@@ -33,6 +33,10 @@ class TestMessage:
             incomplete_message.headers["To"]
             == raw_complete_message["payload"]["headers"][0]["value"]
         )
+        assert (
+            incomplete_message.labels
+            == raw_complete_message["labelIds"]
+        )
         mocked_get_raw_message.assert_called_once_with(raw_incomplete_message["id"])
 
     def test_as_str(self, client, raw_incomplete_message):
@@ -47,6 +51,22 @@ class TestMessage:
                 for attachment in complete_message.attachments
             ]
         )
+
+    def test_it_modifies_a_message(
+        self, mocker, client, raw_incomplete_message, raw_complete_message
+    ):
+        mocked_modify_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.modify_raw_message",
+            return_value=raw_complete_message,
+        )
+        message = Message(client, raw_incomplete_message)
+        message.modify(add_labels=["phishing"], remove_labels=["oklahoma"])
+        mocked_modify_raw_message.assert_called_once_with(
+            raw_incomplete_message["id"],
+            add_labels=["phishing"],
+            remove_labels=["oklahoma"],
+        )
+        assert message.labels == raw_complete_message["labelIds"]
 
 
 class TestAttachment:
