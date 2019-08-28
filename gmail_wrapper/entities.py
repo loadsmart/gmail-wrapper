@@ -67,6 +67,13 @@ class Message:
         return headers
 
     @property
+    def labels(self):
+        if "labelIds" not in self._raw:
+            self._raw = self._client.get_raw_message(self.id)
+
+        return self._raw["labelIds"]
+
+    @property
     def id(self):
         return self._raw.get("id")
 
@@ -81,10 +88,6 @@ class Message:
         return datetime.utcfromtimestamp(date_in_seconds)
 
     @property
-    def labels(self):
-        return self._raw.get("labelIds")
-
-    @property
     def attachments(self):
         return [
             Attachment(self.id, self._client, part)
@@ -93,7 +96,7 @@ class Message:
         ]
 
     def modify(self, add_labels=None, remove_labels=None):
-        self._raw = self._client.modify_message(
+        self._raw = self._client.modify_raw_message(
             self.id, add_labels=add_labels, remove_labels=remove_labels
         )
 

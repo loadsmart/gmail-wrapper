@@ -1,5 +1,5 @@
 def make_gmail_client(
-    mocker, list_return=None, get_return=None, attachment_return=None
+        mocker, list_return=None, get_return=None, attachment_return=None, modify_return=None
 ):
     return mocker.MagicMock(
         users=mocker.MagicMock(
@@ -14,6 +14,11 @@ def make_gmail_client(
                         get=mocker.MagicMock(
                             return_value=mocker.MagicMock(
                                 execute=mocker.MagicMock(return_value=get_return)
+                            )
+                        ),
+                        modify=mocker.MagicMock(
+                            return_value=mocker.MagicMock(
+                                execute=mocker.MagicMock(return_value=modify_return)
                             )
                         ),
                         attachments=mocker.MagicMock(
