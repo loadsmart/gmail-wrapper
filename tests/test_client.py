@@ -1,3 +1,5 @@
+import base64
+
 from gmail_wrapper import GmailClient
 from gmail_wrapper.entities import Message, AttachmentBody
 from tests.utils import make_gmail_client
@@ -118,3 +120,20 @@ class TestModifyMessage:
         mocked_modify_raw_message.assert_called_once_with("CCX457", ["foo"], ["bar"])
         assert isinstance(modified_message, Message)
         assert modified_message.id == raw_complete_message["id"]
+
+
+class TestSendRaw:
+    def test_it_creates_a_proper_sendable_message(self, client):
+        subject = "Hi there!"
+        content = "<html><p>Hi there!</p></html>"
+        to = "bob.dylan@loadsmart.com"
+        cc = ["agostinho.carrara@loadsmart.com", "jon.maddog@loadsmart.com"]
+        bcc = []
+        sendable = client._make_sendable_message(subject, content, to, cc, bcc)
+        decoded = base64.urlsafe_b64decode(sendable["raw"]).decode("utf-8")
+        assert decoded.startswith("Content-Type: text/html;")
+        assert f"subject: {subject}\n" in decoded
+        assert f"to: {to}\n" in decoded
+        assert f"cc: {cc[0]},{cc[1]}\n" in decoded
+        assert f"bcc: \n" in decoded
+        assert content in decoded
