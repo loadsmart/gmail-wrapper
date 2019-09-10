@@ -137,3 +137,21 @@ class TestSendRaw:
         assert f"cc: {cc[0]},{cc[1]}\n" in decoded
         assert f"bcc: \n" in decoded
         assert content in decoded
+
+    def test_it_send_and_return_a_raw_message(self, mocker, raw_complete_message):
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(mocker, send_return=raw_complete_message),
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        sent_message = client.send_raw(
+            "Hi there!", "<html><p>Hey</p></html>", "foo@bar.com"
+        )
+        assert sent_message == raw_complete_message
+        client._messages_resource().send.assert_called_once_with(
+            {
+                "raw": base64.urlsafe_b64encode(
+                    b'Content-Type: text/html; charset="us-ascii"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nsubject: Hi there!\nfrom: foo@bar.com\nto: foo@bar.com\ncc: \nbcc: \n\n<html><p>Hey</p></html>'
+                )
+            }
+        )
