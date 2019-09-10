@@ -1,3 +1,5 @@
+import base64
+
 from gmail_wrapper import GmailClient
 from gmail_wrapper.entities import Message, AttachmentBody
 from tests.utils import make_gmail_client
@@ -118,3 +120,57 @@ class TestModifyMessage:
         mocked_modify_raw_message.assert_called_once_with("CCX457", ["foo"], ["bar"])
         assert isinstance(modified_message, Message)
         assert modified_message.id == raw_complete_message["id"]
+
+
+class TestSendRaw:
+    def test_it_creates_a_proper_sendable_message(self, client):
+        subject = "Hi there!"
+        content = "<html><p>Hi there!</p></html>"
+        to = "bob.dylan@loadsmart.com"
+        cc = ["agostinho.carrara@loadsmart.com", "jon.maddog@loadsmart.com"]
+        bcc = []
+        sendable = client._make_sendable_message(subject, content, to, cc, bcc)
+        decoded = base64.urlsafe_b64decode(sendable["raw"]).decode("utf-8")
+        assert decoded.startswith("Content-Type: text/html;")
+        assert f"subject: {subject}\n" in decoded
+        assert f"to: {to}\n" in decoded
+        assert f"cc: {cc[0]},{cc[1]}\n" in decoded
+        assert f"bcc: \n" in decoded
+        assert content in decoded
+
+    def test_it_send_and_return_a_raw_message(self, mocker, raw_complete_message):
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(mocker, send_return=raw_complete_message),
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        sent_message = client.send_raw(
+            "Hi there!", "<html><p>Hey</p></html>", "john@doe.com"
+        )
+        assert sent_message == raw_complete_message
+        client._messages_resource().send.assert_called_once_with(
+            userId="foo@bar.com",
+            body={
+                "raw": base64.urlsafe_b64encode(
+                    b'Content-Type: text/html; charset="us-ascii"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nsubject: Hi there!\nfrom: foo@bar.com\nto: john@doe.com\ncc: \nbcc: \n\n<html><p>Hey</p></html>'
+                ).decode("utf-8")
+            },
+        )
+
+
+class TestSend:
+    def test_it_returns_the_sent_message(self, client, mocker, raw_complete_message):
+        mocked_send_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.send_raw",
+            return_value=raw_complete_message,
+        )
+        sent_message = client.send(
+            subject="Hi there!",
+            html_content="<html><p>Hey</p></html>",
+            to="foo@bar.com",
+        )
+        mocked_send_raw_message.assert_called_once_with(
+            "Hi there!", "<html><p>Hey</p></html>", "foo@bar.com", None, None
+        )
+        assert isinstance(sent_message, Message)
+        assert sent_message.id == raw_complete_message["id"]

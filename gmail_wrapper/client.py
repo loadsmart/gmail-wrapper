@@ -1,7 +1,9 @@
+import base64
 import json
+from email.mime.text import MIMEText
 
-from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 from googleapiclient import discovery
 
 from gmail_wrapper.entities import Message, AttachmentBody
@@ -60,14 +62,18 @@ class GmailClient:
         return Message(self, raw_message)
 
     def modify_raw_message(self, id, add_labels=None, remove_labels=None):
-        return self._messages_resource().modify(
-            userId=self.email,
-            id=id,
-            body={
-                "addLabelIds": add_labels if add_labels else [],
-                "removeLabelIds": remove_labels if remove_labels else [],
-            },
-        ).execute()
+        return (
+            self._messages_resource()
+            .modify(
+                userId=self.email,
+                id=id,
+                body={
+                    "addLabelIds": add_labels if add_labels else [],
+                    "removeLabelIds": remove_labels if remove_labels else [],
+                },
+            )
+            .execute()
+        )
 
     def modify_message(self, id, add_labels=None, remove_labels=None):
         raw_modified_message = self.modify_raw_message(id, add_labels, remove_labels)
@@ -86,3 +92,30 @@ class GmailClient:
         raw_attachment_body = self.get_raw_attachment_body(id, message_id)
 
         return AttachmentBody(raw_attachment_body)
+
+    def _make_sendable_message(self, subject, html_content, to, cc, bcc):
+        message = MIMEText(html_content, "html")
+        message["subject"] = subject
+        message["from"] = self.email
+        message["to"] = to
+        message["cc"] = ",".join(cc)
+        message["bcc"] = ",".join(bcc)
+        return {
+            "raw": base64.urlsafe_b64encode(bytes(message.as_string(), "utf-8")).decode(
+                "utf-8"
+            )
+        }
+
+    def send_raw(self, subject, html_content, to, cc=None, bcc=None):
+        sendable = self._make_sendable_message(
+            subject, html_content, to, cc if cc else [], bcc if bcc else []
+        )
+
+        return (
+            self._messages_resource().send(userId=self.email, body=sendable).execute()
+        )
+
+    def send(self, subject, html_content, to, cc=None, bcc=None):
+        raw_sent_message = self.send_raw(subject, html_content, to, cc, bcc)
+
+        return Message(self, raw_sent_message)
