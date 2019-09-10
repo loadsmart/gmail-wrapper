@@ -155,3 +155,21 @@ class TestSendRaw:
                 )
             }
         )
+
+
+class TestSend:
+    def test_it_returns_the_sent_message(self, client, mocker, raw_complete_message):
+        mocked_send_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.send_raw",
+            return_value=raw_complete_message,
+        )
+        sent_message = client.send(
+            subject="Hi there!",
+            html_content="<html><p>Hey</p></html>",
+            to="foo@bar.com",
+        )
+        mocked_send_raw_message.assert_called_once_with(
+            "Hi there!", "<html><p>Hey</p></html>", "foo@bar.com", None, None
+        )
+        assert isinstance(sent_message, Message)
+        assert sent_message.id == raw_complete_message["id"]
