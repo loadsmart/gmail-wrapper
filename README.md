@@ -74,6 +74,26 @@ message.modify(add_labels=["processed"], remove_labels=["foo"]) # Beware that yo
 print(message.labels) # ["bar", "processed"]
 ```
 
+- Send message
+
+```python
+content = '''
+<html>
+    <h1>Hey there</h1>
+    <p>I am using gmail-wrapper lib!</p>
+</html>
+'''
+
+message = client.send(
+    subject="You will like it",
+    html_content=content,
+    to="thanos@loadsmart.com",
+    cc=["iron.man@loadsmart.com", "spider.man@loadsmart.com"],
+    bcc=["wolverine@loadsmart.com"]
+) # Beware that you'll need proper scopes
+print(message) # Gmail message: ABC123
+```
+
 ## Need more help?
 
 Reach `#eng-accounting` Slack channel.
