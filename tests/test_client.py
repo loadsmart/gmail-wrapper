@@ -145,15 +145,16 @@ class TestSendRaw:
         )
         client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
         sent_message = client.send_raw(
-            "Hi there!", "<html><p>Hey</p></html>", "foo@bar.com"
+            "Hi there!", "<html><p>Hey</p></html>", "john@doe.com"
         )
         assert sent_message == raw_complete_message
         client._messages_resource().send.assert_called_once_with(
-            {
+            userId="foo@bar.com",
+            body={
                 "raw": base64.urlsafe_b64encode(
-                    b'Content-Type: text/html; charset="us-ascii"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nsubject: Hi there!\nfrom: foo@bar.com\nto: foo@bar.com\ncc: \nbcc: \n\n<html><p>Hey</p></html>'
-                )
-            }
+                    b'Content-Type: text/html; charset="us-ascii"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nsubject: Hi there!\nfrom: foo@bar.com\nto: john@doe.com\ncc: \nbcc: \n\n<html><p>Hey</p></html>'
+                ).decode("utf-8")
+            },
         )
 
 

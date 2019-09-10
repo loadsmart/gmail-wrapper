@@ -100,14 +100,20 @@ class GmailClient:
         message["to"] = to
         message["cc"] = ",".join(cc)
         message["bcc"] = ",".join(bcc)
-        return {"raw": base64.urlsafe_b64encode(bytes(message.as_string(), "utf-8"))}
+        return {
+            "raw": base64.urlsafe_b64encode(bytes(message.as_string(), "utf-8")).decode(
+                "utf-8"
+            )
+        }
 
     def send_raw(self, subject, html_content, to, cc=None, bcc=None):
         sendable = self._make_sendable_message(
             subject, html_content, to, cc if cc else [], bcc if bcc else []
         )
 
-        return self._messages_resource().send(sendable).execute()
+        return (
+            self._messages_resource().send(userId=self.email, body=sendable).execute()
+        )
 
     def send(self, subject, html_content, to, cc=None, bcc=None):
         raw_sent_message = self.send_raw(subject, html_content, to, cc, bcc)
