@@ -80,6 +80,16 @@ class GmailClient:
 
         return Message(self, raw_modified_message)
 
+    def modify_multiple_messages(self, ids, add_labels=None, remove_labels=None):
+        self._messages_resource().batchModify(
+            userId=self.email,
+            body={
+                "ids": ids,
+                "addLabelIds": add_labels if add_labels else [],
+                "removeLabelIds": remove_labels if remove_labels else [],
+            },
+        ).execute()
+
     def get_raw_attachment_body(self, id, message_id):
         return (
             self._messages_resource()
