@@ -66,6 +66,8 @@ for message in messages:
 
 - Modify message labels
 
+If a single message:
+
 ```python
 message_id = "..."
 message = client.get_message(message_id)
@@ -73,6 +75,14 @@ print(message.labels) # ["foo", "bar"]
 message.modify(add_labels=["processed"], remove_labels=["foo"]) # Beware that you'll need proper scopes
 print(message.labels) # ["bar", "processed"]
 ```
+
+If multiple messages:
+
+```python
+message_ids = ["...", "..."]
+message = client.modify_multiple_messages(message_ids, ["processed"], remove_labels=["foo"])
+```
+
 
 - Send message
 
