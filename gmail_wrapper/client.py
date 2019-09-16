@@ -83,8 +83,8 @@ class GmailClient:
     def modify_multiple_messages(self, ids, add_labels=None, remove_labels=None):
         self._messages_resource().batchModify(
             userId=self.email,
-            ids=ids,
             body={
+                "ids": ids,
                 "addLabelIds": add_labels if add_labels else [],
                 "removeLabelIds": remove_labels if remove_labels else [],
             },

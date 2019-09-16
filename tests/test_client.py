@@ -123,23 +123,27 @@ class TestModifyMessage:
 
 
 class TestModifyMultipleMessages:
-    def test_it_modifies_multiple_messages_and_returns_nothing(self, client, mocker):
+    def test_it_modifies_multiple_messages_and_returns_nothing(self, client):
         ids_to_modify = ["ABC123", "DEF432"]
         labels_to_insert = ["Label_123", "Label_432"]
         labels_to_remove = ["Label_567", "Label_789"]
-        client.modify_multiple_messages(ids_to_modify, labels_to_insert, labels_to_remove)
+        client.modify_multiple_messages(
+            ids_to_modify, labels_to_insert, labels_to_remove
+        )
         client._messages_resource().batchModify.assert_called_once_with(
             userId="foo@bar.com",
-            ids=ids_to_modify,
-            body={"addLabelIds": labels_to_insert, "removeLabelIds": labels_to_remove},
+            body={
+                "ids": ids_to_modify,
+                "addLabelIds": labels_to_insert,
+                "removeLabelIds": labels_to_remove,
+            },
         )
 
-    def test_it_can_do_a_noop(self, client, mocker):
+    def test_it_can_do_a_noop(self, client):
         client.modify_multiple_messages([])
         client._messages_resource().batchModify.assert_called_once_with(
             userId="foo@bar.com",
-            ids=[],
-            body={"addLabelIds": [], "removeLabelIds": []},
+            body={"ids": [], "addLabelIds": [], "removeLabelIds": []},
         )
 
 
