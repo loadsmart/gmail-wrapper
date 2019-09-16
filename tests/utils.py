@@ -26,6 +26,11 @@ def make_gmail_client(
                                 execute=mocker.MagicMock(return_value=modify_return)
                             )
                         ),
+                        batchModify=mocker.MagicMock(
+                            return_value=mocker.MagicMock(
+                                execute=mocker.MagicMock()
+                            )
+                        ),
                         send=mocker.MagicMock(
                             return_value=mocker.MagicMock(
                                 execute=mocker.MagicMock(return_value=send_return)
