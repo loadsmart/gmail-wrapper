@@ -79,7 +79,7 @@ class Message:
 
     @property
     def subject(self):
-        return self.headers["Subject"]
+        return self.headers.get("Subject")
 
     @property
     def date(self):
