@@ -35,6 +35,11 @@ class TestMessage:
         )
         mocked_get_raw_message.assert_called_once_with(raw_incomplete_message["id"])
 
+    def test_it_return_none_if_no_subject_header(self, client, raw_complete_message):
+        del raw_complete_message["payload"]["headers"][2]
+        message = Message(client, raw_complete_message)
+        assert message.subject is None
+
     def test_get_labels(
         self, mocker, raw_complete_message, client, raw_incomplete_message
     ):
