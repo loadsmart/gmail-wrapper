@@ -64,6 +64,13 @@ class TestMessage:
             ]
         )
 
+    def test_it_returns_empty_list_if_no_attachments(
+        self, client, raw_complete_message
+    ):
+        raw_complete_message["payload"]["parts"] = None
+        complete_message = Message(client, raw_complete_message)
+        assert complete_message.attachments == []
+
     def test_it_modifies_a_message(
         self, mocker, client, raw_incomplete_message, raw_complete_message
     ):
