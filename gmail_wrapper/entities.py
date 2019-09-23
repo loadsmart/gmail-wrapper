@@ -89,9 +89,10 @@ class Message:
 
     @property
     def attachments(self):
+        parts = self._payload.get("parts")
         return [
             Attachment(self.id, self._client, part)
-            for part in self._payload.get("parts")
+            for part in (parts if parts else [])
             if part["filename"]
         ]
 
