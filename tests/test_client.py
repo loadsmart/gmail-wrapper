@@ -1,7 +1,15 @@
 import base64
 
+import pytest
+from googleapiclient.errors import HttpError
+
 from gmail_wrapper import GmailClient
 from gmail_wrapper.entities import Message, AttachmentBody
+from gmail_wrapper.exceptions import (
+    MessageNotFoundError,
+    AttachmentNotFoundError,
+    GmailError,
+)
 from tests.utils import make_gmail_client
 
 
@@ -14,6 +22,19 @@ class TestGetRawMessages:
         )
         client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
         assert client.get_raw_messages() == raw_response
+
+    def test_it_encapsulates_gmail_exceptions(self, mocker):
+        server_error_response = mocker.MagicMock(status=500)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(
+                mocker, list_effect=HttpError(server_error_response, b"Content")
+            ),
+        )
+
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        with pytest.raises(GmailError):
+            client.get_raw_messages()
 
 
 class TestGetMessages:
@@ -50,6 +71,25 @@ class TestGetRawMessage:
         message = client.get_raw_message("123AAB")
         assert message == raw_complete_message
 
+    @pytest.mark.parametrize(
+        "error_code,exception_expected",
+        [(500, GmailError), (404, MessageNotFoundError)],
+    )
+    def test_it_encapsulates_gmail_exceptions(
+        self, mocker, error_code, exception_expected
+    ):
+        error_response = mocker.MagicMock(status=error_code)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(
+                mocker, get_effect=HttpError(error_response, b"Content")
+            ),
+        )
+
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        with pytest.raises(exception_expected):
+            client.get_raw_message("123AAB")
+
 
 class TestGetMessage:
     def test_it_returns_a_message(self, mocker, client, raw_complete_message):
@@ -76,6 +116,25 @@ class TestGetRawAttachmentBody:
             id="CCX457", message_id="123AAB"
         )
         assert attachment_body == raw_attachment_body
+
+    @pytest.mark.parametrize(
+        "error_code,exception_expected",
+        [(500, GmailError), (404, AttachmentNotFoundError)],
+    )
+    def test_it_encapsulates_gmail_exceptions(
+        self, mocker, error_code, exception_expected
+    ):
+        error_response = mocker.MagicMock(status=error_code)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(
+                mocker, attachment_effect=HttpError(error_response, b"Content")
+            ),
+        )
+
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        with pytest.raises(exception_expected):
+            client.get_raw_attachment_body(id="CCX457", message_id="123AAB")
 
 
 class TestGetAttachmentBody:
@@ -106,6 +165,27 @@ class TestModifyRawMessage:
             id="CCX457",
             body={"addLabelIds": ["processed"], "removeLabelIds": ["phishing"]},
         )
+
+    @pytest.mark.parametrize(
+        "error_code,exception_expected",
+        [(500, GmailError), (404, MessageNotFoundError)],
+    )
+    def test_it_encapsulates_gmail_exceptions(
+        self, mocker, error_code, exception_expected
+    ):
+        error_response = mocker.MagicMock(status=error_code)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(
+                mocker, modify_effect=HttpError(error_response, b"Content")
+            ),
+        )
+
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        with pytest.raises(exception_expected):
+            client.modify_raw_message(
+                id="CCX457", add_labels=["processed"], remove_labels=["phishing"]
+            )
 
 
 class TestModifyMessage:

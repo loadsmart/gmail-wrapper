@@ -5,8 +5,14 @@ from email.mime.text import MIMEText
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient import discovery
+from googleapiclient.errors import HttpError
 
 from gmail_wrapper.entities import Message, AttachmentBody
+from gmail_wrapper.exceptions import (
+    MessageNotFoundError,
+    AttachmentNotFoundError,
+    GmailError,
+)
 
 
 class GmailClient:
@@ -38,11 +44,17 @@ class GmailClient:
     def _messages_resource(self):
         return self._client.users().messages()
 
+    def _execute(self, executable):
+        try:
+            return executable.execute()
+        except HttpError as e:
+            if e.resp.status >= 500:
+                raise GmailError()
+            raise e
+
     def get_raw_messages(self, query="", limit=None):
-        return (
-            self._messages_resource()
-            .list(userId=self.email, q=query, maxResults=limit)
-            .execute()
+        return self._execute(
+            self._messages_resource().list(userId=self.email, q=query, maxResults=limit)
         )
 
     def get_messages(self, query="", limit=None):
@@ -54,7 +66,14 @@ class GmailClient:
         return [Message(self, raw_message) for raw_message in raw_messages["messages"]]
 
     def get_raw_message(self, id):
-        return self._messages_resource().get(userId=self.email, id=id).execute()
+        try:
+            return self._execute(
+                self._messages_resource().get(userId=self.email, id=id)
+            )
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise MessageNotFoundError(id)
+            raise e
 
     def get_message(self, id):
         raw_message = self.get_raw_message(id)
@@ -62,18 +81,21 @@ class GmailClient:
         return Message(self, raw_message)
 
     def modify_raw_message(self, id, add_labels=None, remove_labels=None):
-        return (
-            self._messages_resource()
-            .modify(
-                userId=self.email,
-                id=id,
-                body={
-                    "addLabelIds": add_labels if add_labels else [],
-                    "removeLabelIds": remove_labels if remove_labels else [],
-                },
+        try:
+            return self._execute(
+                self._messages_resource().modify(
+                    userId=self.email,
+                    id=id,
+                    body={
+                        "addLabelIds": add_labels if add_labels else [],
+                        "removeLabelIds": remove_labels if remove_labels else [],
+                    },
+                )
             )
-            .execute()
-        )
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise MessageNotFoundError(id)
+            raise e
 
     def modify_message(self, id, add_labels=None, remove_labels=None):
         raw_modified_message = self.modify_raw_message(id, add_labels, remove_labels)
@@ -81,22 +103,28 @@ class GmailClient:
         return Message(self, raw_modified_message)
 
     def modify_multiple_messages(self, ids, add_labels=None, remove_labels=None):
-        self._messages_resource().batchModify(
-            userId=self.email,
-            body={
-                "ids": ids,
-                "addLabelIds": add_labels if add_labels else [],
-                "removeLabelIds": remove_labels if remove_labels else [],
-            },
-        ).execute()
+        self._execute(
+            self._messages_resource().batchModify(
+                userId=self.email,
+                body={
+                    "ids": ids,
+                    "addLabelIds": add_labels if add_labels else [],
+                    "removeLabelIds": remove_labels if remove_labels else [],
+                },
+            )
+        )
 
     def get_raw_attachment_body(self, id, message_id):
-        return (
-            self._messages_resource()
-            .attachments()
-            .get(userId=self.email, id=id, messageId=message_id)
-            .execute()
-        )
+        try:
+            return self._execute(
+                self._messages_resource()
+                .attachments()
+                .get(userId=self.email, id=id, messageId=message_id)
+            )
+        except HttpError as e:
+            if e.resp.status == 404:
+                raise AttachmentNotFoundError(message_id, id)
+            raise e
 
     def get_attachment_body(self, id, message_id):
         raw_attachment_body = self.get_raw_attachment_body(id, message_id)
@@ -121,8 +149,8 @@ class GmailClient:
             subject, html_content, to, cc if cc else [], bcc if bcc else []
         )
 
-        return (
-            self._messages_resource().send(userId=self.email, body=sendable).execute()
+        return self._execute(
+            self._messages_resource().send(userId=self.email, body=sendable)
         )
 
     def send(self, subject, html_content, to, cc=None, bcc=None):
