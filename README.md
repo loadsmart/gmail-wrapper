@@ -104,6 +104,27 @@ message = client.send(
 print(message) # Gmail message: ABC123
 ```
 
+- Handle exceptions
+
+Exceptions are part of every developer day-to-day. You may want to handle exceptions as follows:
+
+```python
+from gmail_wrapper.exceptions import (
+    MessageNotFoundError,
+    AttachmentNotFoundError,
+    GmailError,
+)
+
+try:
+    do_something()
+except MessageNotFoundError as e:
+    print(f"There is no message! {e}")
+except AttachmentNotFoundError as e:
+    print(f"There is no attachment! {e}")
+except GmailError as e:
+    print(f"Google servers are burning! {e}")
+```
+
 ## Need more help?
 
 Reach `#eng-accounting` Slack channel.
