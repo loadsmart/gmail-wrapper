@@ -8,7 +8,11 @@ from googleapiclient import discovery
 from googleapiclient.errors import HttpError
 
 from gmail_wrapper.entities import Message, AttachmentBody
-from gmail_wrapper.exceptions import MessageNotFoundError, AttachmentNotFoundError
+from gmail_wrapper.exceptions import (
+    MessageNotFoundError,
+    AttachmentNotFoundError,
+    GmailError,
+)
 
 
 class GmailClient:
@@ -41,7 +45,12 @@ class GmailClient:
         return self._client.users().messages()
 
     def _execute(self, executable):
-        return executable.execute()
+        try:
+            return executable.execute()
+        except HttpError as e:
+            if e.resp.status >= 500:
+                raise GmailError()
+            raise e
 
     def get_raw_messages(self, query="", limit=None):
         return self._execute(
