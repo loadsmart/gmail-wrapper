@@ -131,29 +131,71 @@ class GmailClient:
 
         return AttachmentBody(raw_attachment_body)
 
-    def _make_sendable_message(self, subject, html_content, to, cc, bcc):
+    def _make_sendable_message(
+        self,
+        subject,
+        html_content,
+        to,
+        cc,
+        bcc,
+        references,
+        in_reply_to,
+        thread_id=None,
+    ):
         message = MIMEText(html_content, "html")
         message["subject"] = subject
         message["from"] = self.email
         message["to"] = to
         message["cc"] = ",".join(cc)
         message["bcc"] = ",".join(bcc)
+        message["references"] = " ".join(references)
+        message["in-reply-to"] = " ".join(in_reply_to)
         return {
             "raw": base64.urlsafe_b64encode(bytes(message.as_string(), "utf-8")).decode(
                 "utf-8"
-            )
+            ),
+            "threadId": thread_id,
         }
 
-    def send_raw(self, subject, html_content, to, cc=None, bcc=None):
+    def send_raw(
+        self,
+        subject,
+        html_content,
+        to,
+        cc=None,
+        bcc=None,
+        references=None,
+        in_reply_to=None,
+        thread_id=None,
+    ):
         sendable = self._make_sendable_message(
-            subject, html_content, to, cc if cc else [], bcc if bcc else []
+            subject,
+            html_content,
+            to,
+            cc if cc else [],
+            bcc if bcc else [],
+            references if references else [],
+            in_reply_to if in_reply_to else [],
+            thread_id,
         )
 
         return self._execute(
             self._messages_resource().send(userId=self.email, body=sendable)
         )
 
-    def send(self, subject, html_content, to, cc=None, bcc=None):
-        raw_sent_message = self.send_raw(subject, html_content, to, cc, bcc)
+    def send(
+        self,
+        subject,
+        html_content,
+        to,
+        cc=None,
+        bcc=None,
+        references=None,
+        in_reply_to=None,
+        thread_id=None,
+    ):
+        raw_sent_message = self.send_raw(
+            subject, html_content, to, cc, bcc, references, in_reply_to, thread_id
+        )
 
         return Message(self, raw_sent_message)

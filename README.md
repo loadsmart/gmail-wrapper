@@ -104,6 +104,20 @@ message = client.send(
 print(message) # Gmail message: ABC123
 ```
 
+- Reply message
+
+```python
+message_id = "..."
+message = client.get_message(message_id)
+
+reply = '''
+I am out for vacation, will return <strong>Jan 14</strong>.
+
+If it is really important, you can call me, but think twice.
+'''
+response = message.reply(reply)
+```
+
 - Handle exceptions
 
 Exceptions are part of every developer day-to-day. You may want to handle exceptions as follows:
