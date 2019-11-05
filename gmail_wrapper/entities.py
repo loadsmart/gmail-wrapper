@@ -86,11 +86,6 @@ class Message:
         return self.headers.get("From")
 
     @property
-    def references(self):
-        references = self.headers.get("References")
-        return references.split(" ") if references else None
-
-    @property
     def message_id(self):
         """
         While self.id is the user-bound id of the message, self.message_id
@@ -100,6 +95,9 @@ class Message:
 
     @property
     def thread_id(self):
+        if "threadId" not in self._raw:
+            self._raw = self._client.get_raw_message(self.id)
+
         return self._raw.get("threadId")
 
     @property

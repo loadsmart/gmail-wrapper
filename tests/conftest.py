@@ -47,6 +47,7 @@ def raw_complete_message():
                 {"name": "To", "value": "foo@loadsmart.com"},
                 {"name": "From", "value": "john@doe.com"},
                 {"name": "Subject", "value": "Urgent errand"},
+                {"name": "Message-ID", "value": "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"},
             ],
             "parts": [
                 {
