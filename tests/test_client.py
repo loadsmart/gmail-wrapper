@@ -234,7 +234,11 @@ class TestSendRaw:
         to = "bob.dylan@loadsmart.com"
         cc = ["agostinho.carrara@loadsmart.com", "jon.maddog@loadsmart.com"]
         bcc = []
-        sendable = client._make_sendable_message(subject, content, to, cc, bcc)
+        references = []
+        in_reply_to = []
+        sendable = client._make_sendable_message(
+            subject, content, to, cc, bcc, references, in_reply_to
+        )
         decoded = base64.urlsafe_b64decode(sendable["raw"]).decode("utf-8")
         assert decoded.startswith("Content-Type: text/html;")
         assert f"subject: {subject}\n" in decoded
@@ -257,8 +261,9 @@ class TestSendRaw:
             userId="foo@bar.com",
             body={
                 "raw": base64.urlsafe_b64encode(
-                    b'Content-Type: text/html; charset="us-ascii"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nsubject: Hi there!\nfrom: foo@bar.com\nto: john@doe.com\ncc: \nbcc: \n\n<html><p>Hey</p></html>'
-                ).decode("utf-8")
+                    b'Content-Type: text/html; charset="us-ascii"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nsubject: Hi there!\nfrom: foo@bar.com\nto: john@doe.com\ncc: \nbcc: \nreferences: \nin-reply-to: \n\n<html><p>Hey</p></html>'
+                ).decode("utf-8"),
+                "threadId": None,
             },
         )
 
@@ -275,7 +280,43 @@ class TestSend:
             to="foo@bar.com",
         )
         mocked_send_raw_message.assert_called_once_with(
-            "Hi there!", "<html><p>Hey</p></html>", "foo@bar.com", None, None
+            "Hi there!",
+            "<html><p>Hey</p></html>",
+            "foo@bar.com",
+            None,
+            None,
+            None,
+            None,
+            None,
         )
         assert isinstance(sent_message, Message)
         assert sent_message.id == raw_complete_message["id"]
+
+
+class TestReply:
+    def test_it_returns_the_sent_message(self, client, mocker, raw_complete_message):
+        message_to_reply = Message(client, raw_complete_message)
+        expected_message_to_be_sent = {"id": "114ADC", "internalDate": "1566398665"}
+        mocked_send_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.send_raw",
+            return_value=expected_message_to_be_sent,
+        )
+        sent_message = message_to_reply.reply(
+            "The quick brown fox jumps over the lazy dog"
+        )
+        mocked_send_raw_message.assert_called_once_with(
+            "Re:Urgent errand",
+            "The quick brown fox jumps over the lazy dog",
+            "john@doe.com",
+            None,
+            None,
+            [
+                "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"
+            ],
+            [
+                "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"
+            ],
+            "AA121212",
+        )
+        assert isinstance(sent_message, Message)
+        assert sent_message.id == expected_message_to_be_sent["id"]

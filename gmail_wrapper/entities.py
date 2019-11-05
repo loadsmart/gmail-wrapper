@@ -82,6 +82,25 @@ class Message:
         return self.headers.get("Subject")
 
     @property
+    def from_address(self):
+        return self.headers.get("From")
+
+    @property
+    def message_id(self):
+        """
+        While self.id is the user-bound id of the message, self.message_id
+        is the global id of the message, valid for every user on the thread.
+        """
+        return self.headers.get("Message-ID")
+
+    @property
+    def thread_id(self):
+        if "threadId" not in self._raw:
+            self._raw = self._client.get_raw_message(self.id)
+
+        return self._raw.get("threadId")
+
+    @property
     def date(self):
         ms_in_seconds = 1000
         date_in_seconds = int(self._raw.get("internalDate")) / ms_in_seconds
@@ -99,6 +118,16 @@ class Message:
     def modify(self, add_labels=None, remove_labels=None):
         self._raw = self._client.modify_raw_message(
             self.id, add_labels=add_labels, remove_labels=remove_labels
+        )
+
+    def reply(self, html_content):
+        return self._client.send(
+            subject=f"Re:{self.subject}",
+            html_content=html_content,
+            to=self.from_address,
+            references=[self.message_id],
+            in_reply_to=[self.message_id],
+            thread_id=self.thread_id,
         )
 
     def __str__(self):

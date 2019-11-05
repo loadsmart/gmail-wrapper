@@ -25,6 +25,7 @@ class TestMessage:
             return_value=raw_complete_message,
         )
         incomplete_message = Message(client, raw_incomplete_message)
+        assert incomplete_message.thread_id == raw_complete_message["threadId"]
         assert (
             incomplete_message.subject
             == raw_complete_message["payload"]["headers"][2]["value"]
