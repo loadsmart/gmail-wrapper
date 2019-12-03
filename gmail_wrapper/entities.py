@@ -112,7 +112,7 @@ class Message:
         return [
             Attachment(self.id, self._client, part)
             for part in (parts if parts else [])
-            if part["filename"]
+            if part["filename"] and part["body"] and part["body"].get("attachmentId")
         ]
 
     def modify(self, add_labels=None, remove_labels=None):

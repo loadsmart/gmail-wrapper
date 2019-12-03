@@ -65,6 +65,22 @@ class TestMessage:
             ]
         )
 
+    def test_it_does_not_generate_attachment_objects_for_attachments_without_id(
+        self, client, raw_complete_message
+    ):
+        complete_message = Message(client, raw_complete_message)
+        raw_complete_message["payload"]["parts"].append(
+            {
+                "body": {"size": 0, "data": ""},
+                "filename": "invalid.pdf",
+                "partId": "BB710",
+                "mimeType": "application/pdf",
+            }
+        )
+        assert len(complete_message.attachments) == 1
+        assert complete_message.attachments[0].id
+        assert complete_message.attachments[0].filename != "invalid.pdf"
+
     def test_it_returns_empty_list_if_no_attachments(
         self, client, raw_complete_message
     ):
