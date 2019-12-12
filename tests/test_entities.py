@@ -104,6 +104,17 @@ class TestMessage:
         )
         assert message.labels == raw_complete_message["labelIds"]
 
+    def test_it_archives_a_method(self, mocker, client, raw_complete_message):
+        mocked_modify_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.modify_raw_message",
+            return_value=raw_complete_message,
+        )
+        message = Message(client, raw_complete_message)
+        message.archive()
+        mocked_modify_raw_message.assert_called_once_with(
+            raw_complete_message["id"], add_labels=None, remove_labels=["INBOX"]
+        )
+
 
 class TestAttachment:
     def test_it_has_basic_properties_without_additional_fetch(
