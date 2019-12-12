@@ -130,5 +130,8 @@ class Message:
             thread_id=self.thread_id,
         )
 
+    def archive(self):
+        self.modify(remove_labels=["INBOX"])
+
     def __str__(self):
         return "Gmail message: {}".format(self.id)

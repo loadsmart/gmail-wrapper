@@ -83,6 +83,11 @@ message_ids = ["...", "..."]
 message = client.modify_multiple_messages(message_ids, ["processed"], remove_labels=["foo"])
 ```
 
+- Archive a message
+
+```python
+message.archive() # Beware that you'll need proper scopes
+```
 
 - Send message
 
