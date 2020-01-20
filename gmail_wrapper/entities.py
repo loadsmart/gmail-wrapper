@@ -91,7 +91,7 @@ class Message:
         While self.id is the user-bound id of the message, self.message_id
         is the global id of the message, valid for every user on the thread.
         """
-        return self.headers.get("Message-ID")
+        return self.headers.get("Message-ID", self.headers.get("Message-Id"))
 
     @property
     def thread_id(self):
