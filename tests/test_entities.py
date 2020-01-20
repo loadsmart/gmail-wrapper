@@ -115,6 +115,20 @@ class TestMessage:
             raw_complete_message["id"], add_labels=None, remove_labels=["INBOX"]
         )
 
+    def test_message_id_property(self, client, raw_complete_message):
+        message = Message(client, raw_complete_message)
+        assert (
+            message.message_id
+            == "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"
+        )
+        raw_complete_message["payload"]["headers"][3]["name"] = "Message-Id"
+        assert (
+            message.message_id
+            == "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"
+        )
+        raw_complete_message["payload"]["headers"][3]["name"] = "Invalid"
+        assert message.message_id is None
+
 
 class TestAttachment:
     def test_it_has_basic_properties_without_additional_fetch(
