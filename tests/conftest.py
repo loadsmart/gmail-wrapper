@@ -52,9 +52,9 @@ def raw_complete_message():
             "parts": [
                 {
                     "body": {
-                        "data": "I am caught up in a meeting. Can you run an urgent errand for me?",
+                        "data": "I am Dr. Bakare Tunde, the cousin of Nigerian Astronaut, Air Force Major Abacha Tunde. He was the first African in space when he made a secret flight to the Salyut 6 space station in 1979.",
                         "attachmentId": "CCX456",
-                        "size": 65,
+                        "size": 188,
                     },
                     "mimeType": "text/plain",
                     "partId": "BB789",
@@ -66,10 +66,29 @@ def raw_complete_message():
                     "partId": "BB790",
                     "filename": "fox.txt",
                 },
+                {
+                    "body": {"size": 0},
+                    "mimeType": "multipart/mixed",
+                    "partId": "BB791",
+                    "parts": [
+                        {
+                            "body": {"data": "someRandomDataHere", "size": 18},
+                            "mimeType": "text/html",
+                            "partId": "BB791.0",
+                            "filename": "",
+                        },
+                        {
+                            "body": {"attachmentId": "CCX458", "size": 95},
+                            "mimeType": "application/pdf",
+                            "partId": "BB791.1",
+                            "filename": "tigers.pdf",
+                        }
+                    ],
+                },
             ],
         },
-        "snippet": "I am caught up in a meeting. Can you run an urgent errand for me?",
-        "sizeEstimate": 125,
+        "snippet": "I am Dr. Bakare Tunde, the cousin of Nigerian Astronaut, Air Force Major Abacha Tunde.",
+        "sizeEstimate": 361,
         "threadId": "AA121212",
         "labelIds": ["phishing"],
         "id": "123AAB",

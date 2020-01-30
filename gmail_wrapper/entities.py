@@ -106,14 +106,24 @@ class Message:
         date_in_seconds = int(self._raw.get("internalDate")) / ms_in_seconds
         return datetime.utcfromtimestamp(date_in_seconds)
 
+    def _extract_attachments_from_parts(self, parts):
+        attachments = []
+        for part in parts:
+            if part.get("filename") and part.get("body", {}).get("attachmentId"):
+                attachments.append(Attachment(self.id, self._client, part))
+            if part.get("parts"):
+                attachments += self._extract_attachments_from_parts(part.get("parts"))
+
+        return attachments
+
     @property
     def attachments(self):
         parts = self._payload.get("parts")
-        return [
-            Attachment(self.id, self._client, part)
-            for part in (parts if parts else [])
-            if part["filename"] and part["body"] and part["body"].get("attachmentId")
-        ]
+
+        if not parts:
+            return []
+
+        return self._extract_attachments_from_parts(parts)
 
     def modify(self, add_labels=None, remove_labels=None):
         self._raw = self._client.modify_raw_message(

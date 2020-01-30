@@ -77,9 +77,11 @@ class TestMessage:
                 "mimeType": "application/pdf",
             }
         )
-        assert len(complete_message.attachments) == 1
+        assert len(complete_message.attachments) == 2
         assert complete_message.attachments[0].id
-        assert complete_message.attachments[0].filename != "invalid.pdf"
+        assert complete_message.attachments[0].filename == "fox.txt"
+        assert complete_message.attachments[1].id
+        assert complete_message.attachments[1].filename == "tigers.pdf"
 
     def test_it_returns_empty_list_if_no_attachments(
         self, client, raw_complete_message
