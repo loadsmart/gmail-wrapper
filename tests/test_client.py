@@ -291,32 +291,3 @@ class TestSend:
         )
         assert isinstance(sent_message, Message)
         assert sent_message.id == raw_complete_message["id"]
-
-
-class TestReply:
-    def test_it_returns_the_sent_message(self, client, mocker, raw_complete_message):
-        message_to_reply = Message(client, raw_complete_message)
-        expected_message_to_be_sent = {"id": "114ADC", "internalDate": "1566398665"}
-        mocked_send_raw_message = mocker.patch(
-            "gmail_wrapper.client.GmailClient.send_raw",
-            return_value=expected_message_to_be_sent,
-        )
-        sent_message = message_to_reply.reply(
-            "The quick brown fox jumps over the lazy dog"
-        )
-        mocked_send_raw_message.assert_called_once_with(
-            "Re:Urgent errand",
-            "The quick brown fox jumps over the lazy dog",
-            "john@doe.com",
-            None,
-            None,
-            [
-                "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"
-            ],
-            [
-                "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"
-            ],
-            "AA121212",
-        )
-        assert isinstance(sent_message, Message)
-        assert sent_message.id == expected_message_to_be_sent["id"]
