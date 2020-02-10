@@ -117,6 +117,14 @@ class TestMessage:
             raw_complete_message["id"], add_labels=None, remove_labels=["INBOX"]
         )
 
+    def test_reply_to_property(self, client, raw_complete_message):
+        message = Message(client, raw_complete_message)
+        assert message.reply_to is None
+        raw_complete_message["payload"]["headers"].append(
+            {"name": "Reply-To", "value": "luiz.rosa@loadsmart.com"}
+        )
+        assert message.reply_to == "luiz.rosa@loadsmart.com"
+
     def test_message_id_property(self, client, raw_complete_message):
         message = Message(client, raw_complete_message)
         assert (
@@ -130,6 +138,46 @@ class TestMessage:
         )
         raw_complete_message["payload"]["headers"][3]["name"] = "Invalid"
         assert message.message_id is None
+
+    def test_reply(self, client, mocker, raw_complete_message):
+        message = Message(client, raw_complete_message)
+        expected_message_to_be_sent = {"id": "114ADC", "internalDate": "1566398665"}
+        mocked_send_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.send_raw",
+            return_value=expected_message_to_be_sent,
+        )
+        sent_message = message.reply("The quick brown fox jumps over the lazy dog")
+        mocked_send_raw_message.assert_called_once_with(
+            "Re:Urgent errand",
+            "The quick brown fox jumps over the lazy dog",
+            "john@doe.com",
+            None,
+            None,
+            [
+                "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"
+            ],
+            [
+                "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"
+            ],
+            "AA121212",
+        )
+        assert isinstance(sent_message, Message)
+        assert sent_message.id == expected_message_to_be_sent["id"]
+
+    def test_reply_uses_reply_to_if_set(self, client, raw_complete_message, mocker):
+        message = Message(client, raw_complete_message)
+        mocked_send_raw_message = mocker.patch(
+            "gmail_wrapper.client.GmailClient.send_raw"
+        )
+        message.reply("Any content")
+        assert mocked_send_raw_message.call_args[0][2] == "john@doe.com"
+        raw_complete_message["payload"]["headers"].append(
+            {"name": "Reply-To", "value": "luiz.rosa@loadsmart.com"}
+        )
+        message.reply("Any content, again")
+        assert mocked_send_raw_message.call_args[0][2] == "luiz.rosa@loadsmart.com"
+        message.reply("Any content, again and again", use_reply_to=False)
+        assert mocked_send_raw_message.call_args[0][2] == "john@doe.com"
 
 
 class TestAttachment:

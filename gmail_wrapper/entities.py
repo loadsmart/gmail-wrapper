@@ -86,6 +86,10 @@ class Message:
         return self.headers.get("From")
 
     @property
+    def reply_to(self):
+        return self.headers.get("Reply-To")
+
+    @property
     def message_id(self):
         """
         While self.id is the user-bound id of the message, self.message_id
@@ -130,11 +134,13 @@ class Message:
             self.id, add_labels=add_labels, remove_labels=remove_labels
         )
 
-    def reply(self, html_content):
+    def reply(self, html_content, use_reply_to=True):
+        to = self.reply_to if (self.reply_to and use_reply_to) else self.from_address
+
         return self._client.send(
             subject=f"Re:{self.subject}",
             html_content=html_content,
-            to=self.from_address,
+            to=to,
             references=[self.message_id],
             in_reply_to=[self.message_id],
             thread_id=self.thread_id,
