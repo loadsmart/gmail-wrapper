@@ -144,6 +144,6 @@ except GmailError as e:
     print(f"Google servers are burning! {e}")
 ```
 
-## Need more help?
+## Disclaimer
 
-Reach `#eng-accounting` Slack channel.
+Gmail is a trademark of Google. This open-source project is **not** an official library nor has any endorsement of Google.
