@@ -71,7 +71,7 @@ class Message:
         if "labelIds" not in self._raw:
             self._raw = self._client.get_raw_message(self.id)
 
-        return self._raw["labelIds"]
+        return self._raw.get("labelIds", [])
 
     @property
     def id(self):
