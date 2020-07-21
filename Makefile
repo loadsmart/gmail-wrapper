@@ -42,7 +42,8 @@ coverage:
 	coverage xml
 
 release: dist
-	curl -F package=@`find dist -name "gmail_wrapper-*.whl"` $(PRIVATE_PYPI_UPLOAD_URL)
+	pip install twine
+	python -m twine upload --non-interactive --username __token__ --password ${PYPI_TOKEN} dist/*
 
 dist: clean
 	python setup.py bdist_wheel --universal
