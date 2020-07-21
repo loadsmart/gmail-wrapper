@@ -43,7 +43,7 @@ coverage:
 
 release: dist
 	pip install twine
-	python -m twine upload --non-interactive --username __token__ --password ${PYPI_TOKEN} testpypi dist/*
+	python -m twine upload --non-interactive --username __token__ --password ${PYPI_TOKEN} dist/*
 
 dist: clean
 	python setup.py bdist_wheel --universal
