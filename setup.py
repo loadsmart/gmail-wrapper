@@ -17,6 +17,7 @@ setup(
     name="gmail-wrapper",
     description="Because scrapping Gmail data doesn't have to be a pain",
     long_description=readme,
+    long_description_content_type="text/markdown",
     author="Loadsmart Inc.",
     author_email="engineering@loadsmart.com",
     url="https://github.com/loadsmart/gmail-wrapper",
