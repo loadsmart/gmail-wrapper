@@ -43,7 +43,7 @@ coverage:
 
 release: dist
 	pip install twine
-	python -m twine upload --non-interactive --username __token__ --pasword ${PYPI_TOKEN} --repository gmail-wrapper dist/*
+	python -m twine upload --non-interactive --username __token__ --pasword ${PYPI_TOKEN} dist/*
 
 dist: clean
 	python setup.py bdist_wheel --universal
