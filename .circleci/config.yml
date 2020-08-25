@@ -15,10 +15,13 @@ jobs:
             make test-all
 
       - run:
+          command: pip install coveralls
+
+      - run:
           name: gen-coverage
           command: |
-            pip install coverage
             make coverage
+            coveralls
 
       - run:
           name: upload-coverage
