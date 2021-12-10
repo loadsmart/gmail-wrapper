@@ -21,15 +21,12 @@ jobs:
           name: gen-coverage
           command: |
             make coverage
-            if [ $COVERALLS_REPO_TOKEN ]; then
-              coveralls
-            fi
 
       - run:
           name: upload-coverage
           command: |
             if [ $COVERALLS_REPO_TOKEN ]; then
-              bash <(curl -s https://codecov.io/bash)
+              coveralls
             fi
 
   release:
