@@ -5,6 +5,7 @@ requirements = [
     "requests>2,<3",
     "google-auth-httplib2<1",
     "google-api-python-client>1,<2",
+    "google-auth>1,<2",
 ]
 test_requirements = ["pytest", "pytest-cov", "pytest-mock", "coverage"]
 
@@ -12,8 +13,8 @@ with open("README.md", "r") as readme_file:
     readme = readme_file.read()
 
 setup(
-    use_scm_version=True,
-    setup_requires=["setuptools_scm", "pytest-runner"],
+    version_config=True,
+    setup_requires=["setuptools-git-versioning", "pytest-runner"],
     name="gmail-wrapper",
     description="Because scrapping Gmail data doesn't have to be a pain",
     long_description=readme,
