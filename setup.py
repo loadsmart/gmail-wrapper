@@ -5,6 +5,7 @@ requirements = [
     "requests>2,<3",
     "google-auth-httplib2<1",
     "google-api-python-client>1,<2",
+    "google-auth>1,<2",
 ]
 test_requirements = ["pytest", "pytest-cov", "pytest-mock", "coverage"]
 
