@@ -2,12 +2,12 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: gmail-wrapper
-  description: Because scrapping Gmail data doesn't have to be a pain 
+  description: Because scrapping Gmail data doesn't have to be a pain
   annotations:
     github.com/project-slug: loadsmart/gmail-wrapper
   tags:
     - python
 spec:
-  type: other
+  type: library
   lifecycle: production
   owner: common-services
