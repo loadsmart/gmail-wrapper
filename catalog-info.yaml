@@ -5,6 +5,7 @@ metadata:
   description: Because scrapping Gmail data doesn't have to be a pain
   annotations:
     github.com/project-slug: loadsmart/gmail-wrapper
+    opslevel.com/tier: tier_4
   tags:
     - python
 spec:
