@@ -1,17 +1,16 @@
 #!/usr/bin/env python
-import os
-
 from setuptools import setup, find_packages
 
-here = os.path.abspath(os.path.dirname(__file__))
-
+requirements = [
+    "requests>2,<3",
+    "google-auth-httplib2<1",
+    "google-api-python-client>1,<2",
+    "google-auth>1,<2",
+]
 test_requirements = ["pytest", "pytest-cov", "pytest-mock", "coverage"]
 
 with open("README.md", "r") as readme_file:
     readme = readme_file.read()
-
-with open(os.path.join(here, "requirements.txt")) as f:
-    install_requires = [line for line in f.readlines()]
 
 setup(
     version_config=True,
@@ -24,7 +23,7 @@ setup(
     author_email="engineering@loadsmart.com",
     url="https://github.com/loadsmart/gmail-wrapper",
     packages=find_packages(exclude=["tests"]),
-    install_requires=install_requires,
+    install_requires=requirements,
     keywords=["gmail"],
     classifiers=[
         "Natural Language :: English",
