@@ -40,6 +40,10 @@ class Attachment:
         return self._raw.get("filename")
 
     @property
+    def mimetype(self):
+        return self._raw.get("mimeType")
+
+    @property
     def content(self):
         if not self._body.content:
             self._body = self._client.get_attachment_body(self.id, self.message_id)

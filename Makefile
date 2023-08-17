@@ -29,6 +29,10 @@ clean-test:
 	rm -f .coverage
 	rm -fr htmlcov/
 
+install:
+	python -m venv .venv
+	./.venv/bin/python -m pip install -r requirements-dev.txt
+
 test:
 	python setup.py pytest
 

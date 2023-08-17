@@ -3,6 +3,7 @@ import json
 from email.mime.text import MIMEText
 
 from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 from google.oauth2.credentials import Credentials
 from googleapiclient import discovery
 from googleapiclient.errors import HttpError
@@ -23,12 +24,23 @@ class GmailClient:
     SCOPE_INSERT = "https://www.googleapis.com/auth/gmail.insert"
     SCOPE_MODIFY = "https://www.googleapis.com/auth/gmail.modify"
     SCOPE_METADATA = "https://www.googleapis.com/auth/gmail.metadata"
+    SECRETS_STRATEGY = "secrets_json"
+    ACCOUNT_JSON_STRATEGY = "account_json"
 
-    def __init__(self, email, secrets_json_string, scopes=None):
+    def __init__(self, email, secrets_json_string, scopes=None, client_strategy=None):
+        self.credentials = None
+        if client_strategy is None:
+            client_strategy = GmailClient.SECRETS_STRATEGY
         self.email = email
-        self._client = self._make_client(secrets_json_string, scopes)
+        self._client = self._make_client(client_strategy)(secrets_json_string, scopes)
 
-    def _make_client(self, secrets_json_string, scopes):
+    def _make_client(self, client_strategy):
+        return {
+            GmailClient.SECRETS_STRATEGY: self._make_client_json_string,
+            GmailClient.ACCOUNT_JSON_STRATEGY: self._make_client_account_json,
+        }.get(client_strategy)
+
+    def _make_client_json_string(self, secrets_json_string, scopes):
         google_secrets_data = json.loads(secrets_json_string)["web"]
         credentials = Credentials(
             None,
@@ -41,8 +53,26 @@ class GmailClient:
         credentials.refresh(Request())
         return discovery.build("gmail", "v1", credentials=credentials)
 
+    def _make_client_account_json(self, account_json, scopes):
+        self._make_credentials(account_json, scopes)
+        return discovery.build(
+            "gmail", "v1", credentials=self.credentials, cache_discovery=False
+        )
+
     def _messages_resource(self):
         return self._client.users().messages()
+
+    def _make_credentials(self, account_json: dict, scopes: list) -> Credentials:
+        credentials = service_account.Credentials.from_service_account_info(
+            account_json, scopes=scopes
+        )
+        self.credentials = credentials.with_subject(self.email)
+        self._refresh_credentials()
+        return self.credentials
+
+    def _refresh_credentials(self) -> None:
+        if self.credentials and not self.credentials.valid:
+            self.credentials.refresh(Request())
 
     def _execute(self, executable):
         try:
