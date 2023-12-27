@@ -11,6 +11,28 @@ commands:
             pip install tox
 
 jobs:
+  tests36:
+    working_directory: /home/circleci/project
+    docker:
+      - image: cimg/python:3.7
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          command: tox -e py37
+      - store_test_results:
+          path: build
+  tests37:
+    working_directory: /home/circleci/project
+    docker:
+      - image: cimg/python:3.7
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          command: tox -e py37
+      - store_test_results:
+          path: build
   tests38:
     working_directory: /home/circleci/project
     docker:
@@ -112,6 +134,8 @@ workflows:
           name: release
           context: org-global
           requires:
+            - tests36
+            - tests37
             - tests38
             - tests39
             - tests310
