@@ -14,12 +14,12 @@ jobs:
   tests36:
     working_directory: /home/circleci/project
     docker:
-      - image: cimg/python:3.7
+      - image: cimg/python:3.6
     steps:
       - checkout
       - install-dependencies
       - run:
-          command: tox -e py37
+          command: tox -e py36
       - store_test_results:
           path: build
   tests37:
@@ -91,7 +91,7 @@ jobs:
   release:
     working_directory: /home/circleci/project
     docker:
-      - image: cimg/python:3.8
+      - image: cimg/python:3.10
     steps:
       - checkout
       - run:
@@ -105,6 +105,16 @@ workflows:
   version: 2
   main:
     jobs:
+      - tests36:
+          context: org-global
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - tests37:
+          context: org-global
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
       - tests38:
           context: org-global
           filters:
