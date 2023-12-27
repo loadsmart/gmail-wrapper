@@ -1,47 +1,122 @@
-version: 2
+tag-pattern: &tag-pattern
+  only: /^\d+\.\d+\.\d+$/
+
+version: 2.1
+
+commands:
+  install-dependencies:
+    steps:
+      - run:
+          command: |
+            pip install tox
 
 jobs:
-  check:
-    working_directory: ~/repo
+  tests38:
+    working_directory: /home/circleci/project
     docker:
-      - image: themattrix/tox
-
+      - image: cimg/python:3.8
     steps:
       - checkout
-
+      - install-dependencies
       - run:
-          name: test
-          command: |
-            make test-all
-
+          command: tox -e py38
+      - store_test_results:
+          path: build
+  tests39:
+    working_directory: /home/circleci/project
+    docker:
+      - image: cimg/python:3.9
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          command: tox -e py39
+      - store_test_results:
+          path: build
+  tests310:
+    working_directory: /home/circleci/project
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          command: tox -e py310
+      - store_test_results:
+          path: build
+  tests311:
+    working_directory: /home/circleci/project
+    docker:
+      - image: cimg/python:3.11
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          command: tox -e py311
+      - store_test_results:
+          path: build
+  tests312:
+    working_directory: /home/circleci/project
+    docker:
+      - image: cimg/python:3.12
+    steps:
+      - checkout
+      - install-dependencies
+      - run:
+          command: tox -e py312
+      - store_test_results:
+          path: build
   release:
+    working_directory: /home/circleci/project
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.8
     steps:
       - checkout
-
       - run:
-          name: release
-          command: |
-            make release
+          command: make release
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "dist"
 
 workflows:
   version: 2
-  check-all:
+  main:
     jobs:
-      - check
-  check-build-release:
-    jobs:
-      - check:
+      - tests38:
+          context: org-global
           filters:
-            branches:
-              ignore: /.*/
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - tests39:
+          context: org-global
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - tests310:
+          context: org-global
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - tests311:
+          context: org-global
+          filters:
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - tests312:
+          context: org-global
+          filters:
             tags:
               only: /^\d+\.\d+\.\d+$/
       - release:
+          name: release
           context: org-global
           requires:
-            - check
+            - tests38
+            - tests39
+            - tests310
+            - tests311
+            - tests312
           filters:
             branches:
               ignore: /.*/
