@@ -1,4 +1,0 @@
----
-description: 'Add a new method to create the client based on the account_json client'
-type: added
-pr_number: 29
