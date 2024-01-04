@@ -1,4 +1,16 @@
 ---
-description: 'The killerz: Create new Attachment.content_disposition'
+description: 'Create new Attachment.content_disposition'
 type: added
 pr_number: 30
+---
+description: 'Drop support for python 3.6'
+type: removed
+pr_number: 29
+---
+description: 'Add support for newer Python versions(3.7, 3.8, 3.9, 3.10, 3.11, 3.12)'
+type: added
+pr_number: 29
+---
+description: 'Add a new method to create the client based on the account_json client'
+type: added
+pr_number: 29
