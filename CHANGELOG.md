@@ -8,6 +8,16 @@ the schema `YYYY.MM.DD.N` been `N` the number of the release of the day.
 
 ## [Unreleased]
 
+## [2.0.0] - 2024-01-04
+### Added
+- Create new Attachment.content_disposition #30
+- Add a new method to create the client based on the account_json client #29
+- Add support for newer Python versions(3.7, 3.8, 3.9, 3.10, 3.11, 3.12) #29
+- Create new way to create the gmail client. #29
+
+### Removed
+- Drop support for python 3.6 #29
+
 ## [1.5.0] - 2020-07-21
 ### Added
 - Officially release as an open-source project
@@ -23,7 +33,6 @@ the schema `YYYY.MM.DD.N` been `N` the number of the release of the day.
 ## [1.3.2] - 2020-01-30
 ### Added
 - Support recursive parts for attachment lookup
-
 
 ## [1.3.1] - 2020-01-20
 ### Added
@@ -69,7 +78,8 @@ the schema `YYYY.MM.DD.N` been `N` the number of the release of the day.
 ### Added
 - This is the very first release. It is not stable yet but might work 😄
 
-[Unreleased]: https://github.com/loadsmart/gmail-wrapper/compare/1.5.0...HEAD
+[Unreleased]: https://github.com/loadsmart/gmail-wrapper/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/loadsmart/gmail-wrapper/compare/1.5.0...2.0.0
 [1.5.0]: https://github.com/loadsmart/gmail-wrapper/compare/1.4.1...1.5.0
 [1.4.1]: https://github.com/loadsmart/gmail-wrapper/compare/1.4.0...1.4.1
 [1.4.0]: https://github.com/loadsmart/gmail-wrapper/compare/1.3.2...1.4.0
