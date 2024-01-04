@@ -1,0 +1,4 @@
+---
+description: 'Drop support for python 3.6'
+type: removed
+pr_number: 29
