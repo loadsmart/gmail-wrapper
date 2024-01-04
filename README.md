@@ -1,7 +1,6 @@
 # Gmail Wrapper
 
 [![CircleCI](https://circleci.com/gh/loadsmart/gmail-wrapper/tree/master.svg?style=svg&circle-token=110f54407b50c79865fe1f9b4352e213bc68504b)](https://circleci.com/gh/loadsmart/gmail-wrapper/tree/master)
-[![Coverage Status](https://coveralls.io/repos/github/loadsmart/gmail-wrapper/badge.svg?branch=master)](https://coveralls.io/github/loadsmart/gmail-wrapper?branch=master)
 
 Because scrapping Gmail data doesn't have to be a [pain](https://googleapis.github.io/google-api-python-client/docs/dyn/gmail_v1.html).
 
