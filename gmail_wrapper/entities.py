@@ -1,4 +1,5 @@
 import base64
+import cgi
 from datetime import datetime
 
 
@@ -29,6 +30,7 @@ class Attachment:
         self._raw = raw_part
         self._client = client
         self._body = AttachmentBody(raw_part["body"])
+        self._headers = raw_part.get("headers", [])
         self.message_id = message_id
 
     @property
@@ -49,6 +51,25 @@ class Attachment:
             self._body = self._client.get_attachment_body(self.id, self.message_id)
 
         return self._body.content
+
+    @property
+    def content_disposition(self):
+        content_disposition_header = next(
+            (
+                header
+                for header in self._headers
+                if header.get("name") == "Content-Disposition"
+            ),
+            {},
+        )
+
+        content_disposition_value = content_disposition_header.get("value")
+
+        return (
+            cgi.parse_header(content_disposition_value)[0]
+            if content_disposition_value
+            else None
+        )
 
 
 class Message:

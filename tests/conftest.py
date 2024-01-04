@@ -47,7 +47,10 @@ def raw_complete_message():
                 {"name": "To", "value": "foo@loadsmart.com"},
                 {"name": "From", "value": "john@doe.com"},
                 {"name": "Subject", "value": "Urgent errand"},
-                {"name": "Message-ID", "value": "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>"},
+                {
+                    "name": "Message-ID",
+                    "value": "<BY5PR15MB353717D866FC27FEE4DB4EC7F77E0@BY5PR15MB3537.namprd15.prod.outlook.com>",
+                },
             ],
             "parts": [
                 {
@@ -64,6 +67,12 @@ def raw_complete_message():
                     "body": {"data": "", "attachmentId": "CCX457", "size": 60},
                     "mimeType": "text/plain",
                     "partId": "BB790",
+                    "headers": [
+                        {
+                            "name": "Content-Disposition",
+                            "value": "inline",
+                        },
+                    ],
                     "filename": "fox.txt",
                 },
                 {
@@ -81,8 +90,26 @@ def raw_complete_message():
                             "body": {"attachmentId": "CCX458", "size": 95},
                             "mimeType": "application/pdf",
                             "partId": "BB791.1",
+                            "headers": [
+                                {
+                                    "name": "Content-Disposition",
+                                    "value": 'attachment; filename="tigers.pdf"; size=95',
+                                },
+                            ],
                             "filename": "tigers.pdf",
-                        }
+                        },
+                        {
+                            "partId": "BB791.2",
+                            "mimeType": "image/jpeg",
+                            "filename": "image001.jpg",
+                            "headers": [
+                                {
+                                    "name": "Content-Disposition",
+                                    "value": 'inline; filename="image001.jpg"; size=48',
+                                },
+                            ],
+                            "body": {"attachmentId": "ANGjdJ", "size": 48},
+                        },
                     ],
                 },
             ],
