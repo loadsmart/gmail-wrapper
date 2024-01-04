@@ -77,11 +77,16 @@ class TestMessage:
                 "mimeType": "application/pdf",
             }
         )
-        assert len(complete_message.attachments) == 2
-        assert complete_message.attachments[0].id
+        assert len(complete_message.attachments) == 3
+        assert complete_message.attachments[0].id == "CCX457"
         assert complete_message.attachments[0].filename == "fox.txt"
-        assert complete_message.attachments[1].id
+        assert complete_message.attachments[0].content_disposition == "inline"
+        assert complete_message.attachments[1].id == "CCX458"
         assert complete_message.attachments[1].filename == "tigers.pdf"
+        assert complete_message.attachments[1].content_disposition == "attachment"
+        assert complete_message.attachments[2].id == "ANGjdJ"
+        assert complete_message.attachments[2].filename == "image001.jpg"
+        assert complete_message.attachments[2].content_disposition == "inline"
 
     def test_it_returns_empty_list_if_no_attachments(
         self, client, raw_complete_message
@@ -204,6 +209,9 @@ class TestAttachment:
             "123AAB", client, raw_complete_message["payload"]["parts"][1]
         )
         assert incomplete_attachment.content
+        assert incomplete_attachment.id == "CCX457"
+        assert incomplete_attachment.filename == "fox.txt"
+        assert incomplete_attachment.content_disposition == "inline"
         mocked_get_attachment_body.assert_called_once_with(
             raw_attachment_body["attachmentId"], "123AAB"
         )
