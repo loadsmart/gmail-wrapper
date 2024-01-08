@@ -11,6 +11,14 @@ class MessageNotFoundError(Exception):
         return f"MessageNotFoundError: Gmail returned 404 when attempting to get message {self.message_id}"
 
 
+class LabelNotFoundError(Exception):
+    def __init__(self, label_id):
+        self.label_id = label_id
+
+    def __str__(self):
+        return f"LabelNotFoundError: Gmail returned 404 when attempting to get label {self.label_id}"
+
+
 class AttachmentNotFoundError(Exception):
     def __init__(self, message_id, attachment_id):
         self.message_id = message_id

@@ -1,6 +1,6 @@
 import datetime
 
-from gmail_wrapper.entities import Message, Attachment, AttachmentBody
+from gmail_wrapper.entities import Message, Attachment, AttachmentBody, Label
 
 
 class TestMessage:
@@ -237,3 +237,21 @@ class TestAttachmentBody:
             complete_attachment_body.content
             == b"The Quick Brown Fox Jumps Over The Lazy Dog"
         )
+
+
+class TestLabel:
+    def test_it_has_properties_with_incomplete_label(
+            self, raw_incomplete_label
+    ):
+        label = Label(raw_incomplete_label)
+        assert label.id == raw_incomplete_label["id"]
+        assert label.type == raw_incomplete_label["type"]
+        assert label.name == raw_incomplete_label["name"]
+
+    def test_it_has_properties_with_complete_label(
+            self, raw_complete_label
+    ):
+        label = Label(raw_complete_label)
+        assert label.id == raw_complete_label["id"]
+        assert label.type == raw_complete_label["type"]
+        assert label.name == raw_complete_label["name"]
