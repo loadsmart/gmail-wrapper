@@ -11,4 +11,4 @@ metadata:
 spec:
   type: library
   lifecycle: production
-  owner: common-services
+  owner: krakers
