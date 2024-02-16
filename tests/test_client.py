@@ -4,11 +4,11 @@ import pytest
 from googleapiclient.errors import HttpError
 
 from gmail_wrapper import GmailClient
-from gmail_wrapper.entities import Message, AttachmentBody
+from gmail_wrapper.entities import Message, AttachmentBody, Label
 from gmail_wrapper.exceptions import (
     MessageNotFoundError,
     AttachmentNotFoundError,
-    GmailError,
+    GmailError, LabelNotFoundError,
 )
 from tests.utils import make_gmail_client
 
@@ -16,12 +16,15 @@ from tests.utils import make_gmail_client
 class TestGetRawMessages:
     def test_it_returns_raw_messages(self, mocker, raw_incomplete_message):
         raw_response = [{"messages": [raw_incomplete_message, raw_incomplete_message]}]
+        mocked_gmail_client = make_gmail_client(mocker, list_return=raw_response)
         mocker.patch(
             "gmail_wrapper.client.GmailClient._make_client",
-            return_value=make_gmail_client(mocker, list_return=raw_response),
+            return_value=mocked_gmail_client,
         )
         client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
         assert client.get_raw_messages() == raw_response
+        list_call_args = mocked_gmail_client().users().messages().list.call_args[1]
+        assert list_call_args == {"userId": "foo@bar.com", "q": "", "maxResults": None}
 
     def test_it_encapsulates_gmail_exceptions(self, mocker):
         server_error_response = mocker.MagicMock(status=500)
@@ -41,14 +44,32 @@ class TestGetMessages:
     def test_it_returns_a_message_list(self, mocker, client, raw_incomplete_message):
         mocked_get_raw_messages = mocker.patch(
             "gmail_wrapper.client.GmailClient.get_raw_messages",
-            return_value=[
-                {"messages": [raw_incomplete_message, raw_incomplete_message]}
-            ],
+            return_value={"messages": [raw_incomplete_message, raw_incomplete_message]},
         )
         messages = client.get_messages(query="filename:pdf", limit=5)
         mocked_get_raw_messages.assert_called_once_with("filename:pdf", 5)
         assert all([isinstance(message, Message) for message in messages])
         assert all([message.id is not None for message in messages])
+        assert len(messages) == 2
+
+    def test_when_get_messages_call_list_expected_arguments(
+        self, mocker, raw_incomplete_message
+    ):
+        raw_response = {"messages": [raw_incomplete_message, raw_incomplete_message]}
+        mocked_gmail_client = make_gmail_client(mocker, list_return=raw_response)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=mocked_gmail_client,
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+
+        messages = client.get_messages(query="filename:pdf", limit=5)
+
+        assert all([isinstance(message, Message) for message in messages])
+        assert all([message.id is not None for message in messages])
+        assert client.get_raw_messages() == raw_response
+        list_call_args = mocked_gmail_client().users().messages().list.call_args[1]
+        assert list_call_args == {"userId": "foo@bar.com", "q": "", "maxResults": None}
 
     def test_it_doesnt_break_when_no_results(self, mocker):
         raw_response = {"resultSizeEstimate": 0}
@@ -58,6 +79,89 @@ class TestGetMessages:
         )
         client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
         messages = client.get_messages()
+        assert messages == []
+
+
+class TestGetMessagesPaginated:
+    def test_it_returns_a_message_list(self, mocker, client, raw_incomplete_message):
+        mocked_get_raw_messages = mocker.patch(
+            "gmail_wrapper.client.GmailClient.get_raw_messages",
+            return_value={
+                "messages": [raw_incomplete_message, raw_incomplete_message],
+                "nextPageToken": "92781kd3",
+            },
+        )
+        messages, page_token = client.get_messages_paginated(
+            query="filename:pdf", limit=5
+        )
+        mocked_get_raw_messages.assert_called_once_with("filename:pdf", 5, None)
+        assert all([isinstance(message, Message) for message in messages])
+        assert all([message.id is not None for message in messages])
+        assert page_token == "92781kd3"
+
+    def test_when_get_messages_call_list_expected_arguments_when_page_token_is_provided(
+        self, mocker, raw_incomplete_message
+    ):
+        raw_response = {
+            "messages": [raw_incomplete_message, raw_incomplete_message],
+            "nextPageToken": None,
+        }
+        mocked_gmail_client = make_gmail_client(mocker, list_return=raw_response)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=mocked_gmail_client,
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+
+        messages, page_token = client.get_messages_paginated(
+            query="filename:pdf", limit=5, page_token="a8391js0"
+        )
+
+        assert all([isinstance(message, Message) for message in messages])
+        assert all([message.id is not None for message in messages])
+        list_call_args = mocked_gmail_client().users().messages().list.call_args[1]
+        assert page_token is None
+        assert list_call_args == {
+            "userId": "foo@bar.com",
+            "q": "filename:pdf",
+            "maxResults": 5,
+            "pageToken": "a8391js0",
+        }
+
+    def test_call_list_with_page_token(self, mocker, raw_incomplete_message):
+        raw_response = {
+            "messages": [raw_incomplete_message, raw_incomplete_message],
+            "nextPageToken": None,
+        }
+        mocked_gmail_client = make_gmail_client(mocker, list_return=raw_response)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=mocked_gmail_client,
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+
+        messages, page_token = client.get_messages_paginated(
+            query="filename:pdf", limit=5
+        )
+
+        assert all([isinstance(message, Message) for message in messages])
+        assert len(messages) == 2
+        list_call_args = mocked_gmail_client().users().messages().list.call_args[1]
+        assert page_token is None
+        assert list_call_args == {
+            "userId": "foo@bar.com",
+            "q": "filename:pdf",
+            "maxResults": 5,
+        }
+
+    def test_it_doesnt_break_when_no_results(self, mocker):
+        raw_response = {"resultSizeEstimate": 0}
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(mocker, list_return=raw_response),
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        messages, _ = client.get_messages_paginated()
         assert messages == []
 
 
@@ -291,3 +395,102 @@ class TestSend:
         )
         assert isinstance(sent_message, Message)
         assert sent_message.id == raw_complete_message["id"]
+
+
+class TestGetRawLabels:
+    def test_it_returns_raw_labels(self, mocker, list_label_payload):
+        mocked_gmail_client = make_gmail_client(
+            mocker, list_return=list_label_payload, method="labels"
+        )
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=mocked_gmail_client,
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        assert client.get_raw_labels() == list_label_payload
+        list_call_args = mocked_gmail_client().users().labels().list.call_args[1]
+        assert list_call_args == {"userId": "foo@bar.com"}
+
+    def test_it_encapsulates_gmail_exceptions(self, mocker):
+        server_error_response = mocker.MagicMock(status=500)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(
+                mocker,
+                list_effect=HttpError(server_error_response, b"Content"),
+                method="labels",
+            ),
+        )
+
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        with pytest.raises(GmailError):
+            client.get_raw_labels()
+
+
+class TestGetRawLabel:
+    def test_it_returns_raw_label(self, mocker, get_label_payload):
+        label_id = "Label_29389190"
+        mocked_gmail_client = make_gmail_client(
+            mocker, get_return=get_label_payload, method="labels"
+        )
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=mocked_gmail_client,
+        )
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+
+        raw_label = client.get_raw_label(label_id)
+
+        assert raw_label == get_label_payload
+        list_call_args = mocked_gmail_client().users().labels().get.call_args_list[0][1]
+        assert list_call_args == {"userId": "foo@bar.com", "id": label_id}
+
+    @pytest.mark.parametrize(
+        "error_code,exception_expected",
+        [(500, GmailError), (404, LabelNotFoundError)],
+    )
+    def test_it_encapsulates_gmail_exceptions(self, mocker, error_code, exception_expected):
+        server_error_response = mocker.MagicMock(status=error_code)
+        mocker.patch(
+            "gmail_wrapper.client.GmailClient._make_client",
+            return_value=make_gmail_client(
+                mocker,
+                get_effect=HttpError(server_error_response, b"Content"),
+                method="labels",
+            ),
+        )
+
+        client = GmailClient(email="foo@bar.com", secrets_json_string="{}")
+        with pytest.raises(exception_expected):
+            client.get_raw_label("Label_29389190")
+
+
+class TestGetLabels:
+    def test_get_labels(self, mocker, client, list_label_payload):
+        mocked_get_raw_labels = mocker.patch(
+            "gmail_wrapper.client.GmailClient.get_raw_labels",
+            return_value=list_label_payload,
+        )
+
+        labels = client.get_labels()
+
+        mocked_get_raw_labels.assert_called_once_with()
+        assert all([isinstance(label, Label) for label in labels])
+        assert all([label.id is not None for label in labels])
+        assert len(labels) == 2
+
+
+class TestGetLabel:
+    def test_get_label(self, mocker, client, get_label_payload):
+        label_id = "Label_192818"
+
+        mocked_get_raw_label = mocker.patch(
+            "gmail_wrapper.client.GmailClient.get_raw_label",
+            return_value=get_label_payload,
+        )
+
+        label = client.get_label(label_id)
+
+        mocked_get_raw_label.assert_called_once_with(label_id)
+        assert isinstance(label, Label)
+        assert label.id == label_id

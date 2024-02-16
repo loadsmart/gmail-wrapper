@@ -8,11 +8,11 @@ from google.oauth2.credentials import Credentials
 from googleapiclient import discovery
 from googleapiclient.errors import HttpError
 
-from gmail_wrapper.entities import Message, AttachmentBody
+from gmail_wrapper.entities import Message, AttachmentBody, Label
 from gmail_wrapper.exceptions import (
     MessageNotFoundError,
     AttachmentNotFoundError,
-    GmailError,
+    GmailError, LabelNotFoundError,
 )
 
 
@@ -62,6 +62,9 @@ class GmailClient:
     def _messages_resource(self):
         return self._client.users().messages()
 
+    def _labels_resource(self):
+        return self._client.users().labels()
+
     def _make_credentials(self, account_json: dict, scopes: list) -> Credentials:
         credentials = service_account.Credentials.from_service_account_info(
             account_json, scopes=scopes
@@ -82,10 +85,47 @@ class GmailClient:
                 raise GmailError()
             raise e
 
-    def get_raw_messages(self, query="", limit=None):
-        return self._execute(
-            self._messages_resource().list(userId=self.email, q=query, maxResults=limit)
-        )
+    def get_raw_messages(self, query="", limit=None, page_token=None):
+        arguments = {"userId": self.email, "q": query, "maxResults": limit}
+
+        if page_token:
+            arguments.update({"pageToken": page_token})
+
+        return self._execute(self._messages_resource().list(**arguments))
+
+    def get_raw_labels(self):
+        return self._execute(self._labels_resource().list(userId=self.email))
+
+    def get_raw_label(self, label_id):
+        try:
+            return self._execute(self._labels_resource().get(userId=self.email, id=label_id))
+        except HttpError as exception:
+            if exception.resp.status == 404:
+                raise LabelNotFoundError(label_id)
+            raise exception
+
+    def get_labels(self):
+        raw_labels = self.get_raw_labels()
+
+        if "labels" not in raw_labels:
+            return []
+
+        return [Label(raw_label) for raw_label in raw_labels['labels']]
+
+    def get_label(self, label_id):
+        raw_label = self.get_raw_label(label_id)
+
+        return Label(raw_label)
+
+    def get_messages_paginated(self, query="", limit=None, page_token=None):
+        raw_messages = self.get_raw_messages(query, limit, page_token)
+
+        if "messages" not in raw_messages:
+            return [], None
+
+        return [
+            Message(self, raw_message) for raw_message in raw_messages["messages"]
+        ], raw_messages["nextPageToken"]
 
     def get_messages(self, query="", limit=None):
         raw_messages = self.get_raw_messages(query, limit)
