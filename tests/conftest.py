@@ -138,3 +138,47 @@ def client(mocker):
         return_value=make_gmail_client(mocker),
     )
     return GmailClient(email="foo@bar.com", secrets_json_string="{}")
+
+
+@pytest.fixture
+def raw_complete_label():
+    return {
+        "id": "Label_192818",
+        "name": "Label created by user",
+        "messageListVisibility": "show",
+        "labelListVisibility": "labelShow",
+        "type": "user",
+        "messagesTotal": 90,
+        "messagesUnread": 20,
+        "threadsTotal": 55,
+        "threadsUnread": 12,
+        "color": {
+            "textColor": "#ffd6a2",
+            "backgroundColor": "#ffc8af",
+        },
+    }
+
+
+@pytest.fixture
+def raw_incomplete_label():
+    return {
+        "id": "Label_192818",
+        "name": "Label created by user",
+        "messageListVisibility": "show",
+        "labelListVisibility": "labelShow",
+        "type": "user",
+        "color": {
+            "textColor": "#ffd6a2",
+            "backgroundColor": "#ffc8af",
+        },
+    }
+
+
+@pytest.fixture
+def get_label_payload(raw_complete_label):
+    return raw_complete_label
+
+
+@pytest.fixture
+def list_label_payload(raw_incomplete_label):
+    return {"labels": [raw_incomplete_label, raw_incomplete_label]}

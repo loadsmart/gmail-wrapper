@@ -176,3 +176,20 @@ class Message:
 
     def __str__(self):
         return "Gmail message: {}".format(self.id)
+
+
+class Label:
+    def __init__(self, raw_label):
+        self._raw = raw_label
+
+    @property
+    def id(self):
+        return self._raw.get("id")
+
+    @property
+    def name(self):
+        return self._raw.get("name")
+
+    @property
+    def type(self):
+        return self._raw.get("type")

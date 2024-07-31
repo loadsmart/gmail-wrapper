@@ -9,61 +9,59 @@ def make_gmail_client(
     get_effect=None,
     attachment_effect=None,
     modify_effect=None,
+    method="messages",
 ):
-    return mocker.MagicMock(
-        return_value=mocker.MagicMock(
-            users=mocker.MagicMock(
-                return_value=mocker.MagicMock(
-                    messages=mocker.MagicMock(
-                        return_value=mocker.MagicMock(
-                            list=mocker.MagicMock(
-                                return_value=mocker.MagicMock(
-                                    execute=mocker.MagicMock(
-                                        return_value=list_return,
-                                        side_effect=list_effect,
-                                    )
-                                )
-                            ),
-                            get=mocker.MagicMock(
-                                return_value=mocker.MagicMock(
-                                    execute=mocker.MagicMock(
-                                        return_value=get_return, side_effect=get_effect
-                                    )
-                                )
-                            ),
-                            modify=mocker.MagicMock(
-                                return_value=mocker.MagicMock(
-                                    execute=mocker.MagicMock(
-                                        return_value=modify_return,
-                                        side_effect=modify_effect,
-                                    )
-                                )
-                            ),
-                            batchModify=mocker.MagicMock(
-                                return_value=mocker.MagicMock(
-                                    execute=mocker.MagicMock()
-                                )
-                            ),
-                            send=mocker.MagicMock(
-                                return_value=mocker.MagicMock(
-                                    execute=mocker.MagicMock(return_value=send_return)
-                                )
-                            ),
-                            attachments=mocker.MagicMock(
-                                return_value=mocker.MagicMock(
-                                    get=mocker.MagicMock(
-                                        return_value=mocker.MagicMock(
-                                            execute=mocker.MagicMock(
-                                                return_value=attachment_return,
-                                                side_effect=attachment_effect,
-                                            )
-                                        )
-                                    )
-                                )
-                            ),
+    args = {
+        method: mocker.MagicMock(
+            return_value=mocker.MagicMock(
+                list=mocker.MagicMock(
+                    return_value=mocker.MagicMock(
+                        execute=mocker.MagicMock(
+                            return_value=list_return,
+                            side_effect=list_effect,
                         )
                     )
-                )
+                ),
+                get=mocker.MagicMock(
+                    return_value=mocker.MagicMock(
+                        execute=mocker.MagicMock(
+                            return_value=get_return, side_effect=get_effect
+                        )
+                    )
+                ),
+                modify=mocker.MagicMock(
+                    return_value=mocker.MagicMock(
+                        execute=mocker.MagicMock(
+                            return_value=modify_return,
+                            side_effect=modify_effect,
+                        )
+                    )
+                ),
+                batchModify=mocker.MagicMock(
+                    return_value=mocker.MagicMock(execute=mocker.MagicMock())
+                ),
+                send=mocker.MagicMock(
+                    return_value=mocker.MagicMock(
+                        execute=mocker.MagicMock(return_value=send_return)
+                    )
+                ),
+                attachments=mocker.MagicMock(
+                    return_value=mocker.MagicMock(
+                        get=mocker.MagicMock(
+                            return_value=mocker.MagicMock(
+                                execute=mocker.MagicMock(
+                                    return_value=attachment_return,
+                                    side_effect=attachment_effect,
+                                )
+                            )
+                        )
+                    )
+                ),
             )
+        )
+    }
+    return mocker.MagicMock(
+        return_value=mocker.MagicMock(
+            users=mocker.MagicMock(return_value=mocker.MagicMock(**args))
         )
     )
